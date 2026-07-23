@@ -1,153 +1,279 @@
 import Category from "../models/Category.js";
 
 
+// ===============================
+// GET ALL CATEGORIES
+// ===============================
 
-// GET ALL
+export const getCategories = async (req, res) => {
 
-export const getCategories = async(req,res)=>{
+    try {
 
-try{
-
-const categories =
-await Category.find()
-.sort({
-createdAt:-1
-});
-
-
-res.json(categories);
+        const categories = await Category.find()
+            .sort({
+                createdAt: -1
+            });
 
 
-}
-catch(error){
-
-res.status(500)
-.json({
-message:"Failed to get categories"
-});
-
-}
-
-};
+        res.status(200).json(categories);
 
 
+    } catch (error) {
+
+        console.error("GET CATEGORIES ERROR:");
+        console.error(error);
 
 
+        res.status(500).json({
 
+            message: error.message
 
-// CREATE
+        });
 
-export const createCategory = async(req,res)=>{
-
-try{
-
-
-const category =
-await Category.create(
-req.body
-);
-
-
-res.status(201)
-.json(category);
-
-
-
-}
-catch(error){
-
-res.status(500)
-.json({
-message:"Category creation failed"
-});
-
-
-}
+    }
 
 };
 
 
 
 
+// ===============================
+// CREATE CATEGORY
+// ===============================
+
+export const createCategory = async (req, res) => {
+
+    try {
 
 
-// UPDATE
-
-export const updateCategory = async(req,res)=>{
-
-
-try{
-
-
-const category =
-await Category.findByIdAndUpdate(
-
-req.params.id,
-
-req.body,
-
-{
-new:true
-}
-
-);
+        console.log("CATEGORY REQUEST BODY:");
+        console.log(req.body);
 
 
 
-res.json(category);
+        const {
+            name,
+            description
+        } = req.body;
 
 
 
-}
-catch(error){
+        if (!name || name.trim() === "") {
+
+            return res.status(400).json({
+
+                message: "Category name is required"
+
+            });
+
+        }
 
 
-res.status(500)
-.json({
-message:"Update failed"
-});
+
+        const existingCategory = await Category.findOne({
+
+            name: name.trim()
+
+        });
 
 
-}
+
+        if (existingCategory) {
+
+            return res.status(400).json({
+
+                message: "Category already exists"
+
+            });
+
+        }
+
+
+
+        const category = await Category.create({
+
+            name: name.trim(),
+
+            description: description || ""
+
+        });
+
+
+
+        console.log("CATEGORY CREATED:");
+        console.log(category);
+
+
+
+        res.status(201).json({
+
+            success: true,
+
+            message: "Category created successfully",
+
+            category
+
+        });
+
+
+
+    } catch (error) {
+
+
+        console.error("CREATE CATEGORY ERROR:");
+        console.error(error);
+
+
+
+        res.status(500).json({
+
+            success:false,
+
+            message:error.message
+
+        });
+
+
+    }
 
 };
 
 
 
 
+// ===============================
+// UPDATE CATEGORY
+// ===============================
+
+export const updateCategory = async (req, res) => {
+
+    try {
+
+
+        const category = await Category.findByIdAndUpdate(
+
+            req.params.id,
+
+            {
+
+                name:req.body.name,
+
+                description:req.body.description || ""
+
+            },
+
+            {
+
+                new:true,
+
+                runValidators:true
+
+            }
+
+        );
 
 
 
-// DELETE
+        if (!category) {
 
-export const deleteCategory = async(req,res)=>{
+            return res.status(404).json({
 
+                message:"Category not found"
 
-try{
+            });
 
-
-await Category.findByIdAndDelete(
-req.params.id
-);
+        }
 
 
 
-res.json({
-message:"Deleted"
-});
+        res.status(200).json({
+
+            success:true,
+
+            message:"Category updated successfully",
+
+            category
+
+        });
 
 
 
-}
-catch(error){
+    } catch(error) {
 
 
-res.status(500)
-.json({
-message:"Delete failed"
-});
+        console.error("UPDATE CATEGORY ERROR:");
+        console.error(error);
 
 
-}
+
+        res.status(500).json({
+
+            message:error.message
+
+        });
+
+
+    }
+
+};
+
+
+
+
+// ===============================
+// DELETE CATEGORY
+// ===============================
+
+export const deleteCategory = async (req,res)=>{
+
+    try {
+
+
+        const category = await Category.findByIdAndDelete(
+
+            req.params.id
+
+        );
+
+
+
+        if(!category){
+
+            return res.status(404).json({
+
+                message:"Category not found"
+
+            });
+
+        }
+
+
+
+        res.status(200).json({
+
+            success:true,
+
+            message:"Category deleted successfully"
+
+        });
+
+
+
+    } catch(error){
+
+
+        console.error("DELETE CATEGORY ERROR:");
+        console.error(error);
+
+
+
+        res.status(500).json({
+
+            message:error.message
+
+        });
+
+
+    }
 
 };

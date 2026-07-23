@@ -1,88 +1,69 @@
 import express from "express";
 import mongoose from "mongoose";
-import cors from "cors";
 import dotenv from "dotenv";
+import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import rateLimit from "express-rate-limit";
-import path from "path";
 
+
+// Routes
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
+import customerRoutes from "./routes/customerRoutes.js";
+import billRoutes from "./routes/billRoutes.js";
+import transactionRoutes from "./routes/transactionRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
+
 
 dotenv.config();
+
 
 const app = express();
 
 
-// ==============================
-// Security Middleware
-// ==============================
+// =====================
+// Middleware
+// =====================
 
-app.use(helmet());
-
-app.use(
-  cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-  })
-);
+app.use(cors());
 
 app.use(express.json());
+
+app.use(express.urlencoded({
+    extended:true
+}));
+
+app.use(helmet());
 
 app.use(morgan("dev"));
 
 
-// ==============================
-// Static Upload Folder
-// ==============================
 
-app.use(
-  "/uploads",
-  express.static(path.join(process.cwd(), "uploads"))
-);
-
-
-// ==============================
-// Rate Limiter
-// ==============================
-
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: "Too many requests. Please try again later.",
-});
-
-app.use(limiter);
-
-
-// ==============================
-// MongoDB Connection
-// ==============================
+// =====================
+// Database Connection
+// =====================
 
 mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("✅ MongoDB Connected");
-  })
-  .catch((err) => {
-    console.log("MongoDB Error:", err.message);
-  });
+.connect(process.env.MONGO_URI)
+.then(()=>{
 
+    console.log("MongoDB Connected");
 
-// ==============================
-// Test Route
-// ==============================
+})
+.catch((error)=>{
 
-app.get("/", (req, res) => {
-  res.send("🌾 Shetkari Agro Backend Running...");
+    console.log("MongoDB Connection Error");
+
+    console.log(error);
+
 });
 
 
-// ==============================
+
+// =====================
 // API Routes
-// ==============================
+// =====================
 
 app.use("/api/auth", authRoutes);
 
@@ -90,25 +71,63 @@ app.use("/api/products", productRoutes);
 
 app.use("/api/categories", categoryRoutes);
 
+app.use("/api/customers", customerRoutes);
 
-// ==============================
-// 404
-// ==============================
+app.use("/api/bills", billRoutes);
 
-app.use((req, res) => {
-  res.status(404).json({
-    success: false,
-    message: "API Not Found",
-  });
+app.use("/api/transactions", transactionRoutes);
+
+app.use("/api/dashboard", dashboardRoutes);
+
+
+
+// =====================
+// Test Route
+// =====================
+
+app.get("/",(req,res)=>{
+
+    res.json({
+
+        message:"Shetkari Agro API Running"
+
+    });
+
 });
 
 
-// ==============================
-// Start Server
-// ==============================
+
+// =====================
+// Error Handler
+// =====================
+
+app.use((err,req,res,next)=>{
+
+    console.error(err);
+
+    res.status(500).json({
+
+        message:"Server Error",
+
+        error:err.message
+
+    });
+
+});
+
+
+
+// =====================
+// Server Start
+// =====================
 
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+
+app.listen(PORT,()=>{
+
+    console.log(
+        `Server running on port ${PORT}`
+    );
+
 });

@@ -8,7 +8,8 @@ import {
   getProducts,
   createProduct,
   updateProduct,
-  deleteProduct
+  deleteProduct,
+  importProducts
 } from "../services/productService";
 
 
@@ -28,6 +29,9 @@ const [sort,setSort]=useState("latest");
 
 const [page,setPage]=useState(1);
 
+const [importFile,setImportFile]=useState(null);
+
+
 
 const productsPerPage=5;
 
@@ -44,7 +48,11 @@ setProducts(data);
 
 }catch(error){
 
-toast.error("Failed to load products");
+console.log(error);
+
+toast.error(
+"Failed to load products"
+);
 
 }
 
@@ -64,6 +72,7 @@ loadProducts();
 
 
 const handleSubmit=async(data)=>{
+
 
 try{
 
@@ -123,17 +132,14 @@ toast.error(
 
 
 
-
 const handleDelete=async(product)=>{
 
 
-const confirmDelete =
-window.confirm(
+if(
+!window.confirm(
 `Delete ${product.productName}?`
-);
-
-
-if(!confirmDelete)
+)
+)
 return;
 
 
@@ -154,20 +160,151 @@ toast.success(
 loadProducts();
 
 
-
 }catch(error){
-
 
 toast.error(
 "Delete failed"
 );
 
+}
+
+};
+
+
+
+
+
+
+const handleImport=async()=>{
+
+
+if(!importFile){
+
+toast.error(
+"Select CSV file"
+);
+
+return;
 
 }
 
 
+
+try{
+
+
+const result =
+await importProducts(
+importFile
+);
+
+
+
+toast.success(
+`${result.inserted} products imported`
+);
+
+
+
+setImportFile(null);
+
+
+loadProducts();
+
+
+
+}catch(error){
+
+
+console.log(error);
+
+
+toast.error(
+"Import failed"
+);
+
+
+}
+
 };
 
+
+
+
+
+
+
+const downloadTemplate=()=>{
+
+
+const csv=[
+
+[
+"productName",
+"category",
+"brand",
+"purchasePrice",
+"sellingPrice",
+"gst",
+"currentStock",
+"minimumStock",
+"unit",
+"expiryDate",
+"supplier"
+],
+
+
+[
+"Urea Fertilizer",
+"Fertilizer",
+"ABC",
+500,
+650,
+5,
+100,
+10,
+"bag",
+"",
+"XYZ Supplier"
+]
+
+]
+
+.map(row=>row.join(","))
+
+.join("\n");
+
+
+
+const blob =
+new Blob(
+[csv],
+{
+type:"text/csv"
+}
+);
+
+
+
+const url =
+URL.createObjectURL(blob);
+
+
+
+const link =
+document.createElement("a");
+
+
+link.href=url;
+
+link.download=
+"product_import_template.csv";
+
+
+link.click();
+
+
+};
 
 
 
@@ -185,7 +322,6 @@ p=>p.category
 )
 
 ];
-
 
 
 
@@ -219,14 +355,17 @@ product.category===category
 
 
 if(sort==="priceHigh")
+
 return b.sellingPrice-a.sellingPrice;
 
 
 if(sort==="priceLow")
+
 return a.sellingPrice-b.sellingPrice;
 
 
 if(sort==="stock")
+
 return b.currentStock-a.currentStock;
 
 
@@ -234,7 +373,6 @@ return new Date(b.createdAt)-new Date(a.createdAt);
 
 
 });
-
 
 
 
@@ -261,22 +399,22 @@ p=>p.currentStock<=p.minimumStock
 
 
 
-
-
 const inventoryValue =
 products.reduce(
+
 (sum,p)=>
 sum+(p.purchasePrice*p.currentStock),
+
 0
+
 );
 
 
 
 
 
-
 const lastIndex =
-page * productsPerPage;
+page*productsPerPage;
 
 
 const firstIndex =
@@ -301,75 +439,9 @@ filteredProducts.length/productsPerPage
 
 
 
-
-const exportCSV=()=>{
-
-
-const csv=[
-
-[
-"Product",
-"Category",
-"Stock",
-"Price"
-],
-
-
-...products.map(p=>[
-
-p.productName,
-p.category,
-p.currentStock,
-p.sellingPrice
-
-])
-
-]
-
-.map(row=>row.join(","))
-
-.join("\n");
-
-
-
-const blob=
-new Blob(
-[csv],
-{
-type:"text/csv"
-}
-);
-
-
-
-const url=
-URL.createObjectURL(blob);
-
-
-
-const link=
-document.createElement("a");
-
-
-link.href=url;
-
-link.download="products.csv";
-
-link.click();
-
-
-};
-
-
-
-
-
-
 return(
 
-
 <div className="p-6">
-
 
 
 <h1 className="text-3xl font-bold text-green-700">
@@ -388,17 +460,14 @@ Shetkari Agro Inventory
 
 
 
-
-
 <div className="grid md:grid-cols-4 gap-5 mb-8">
 
 
-
-<div className="bg-white shadow rounded-2xl p-5">
+<div className="bg-white shadow rounded-xl p-5">
 
 <p>Total Products</p>
 
-<h2 className="text-3xl font-bold text-green-700">
+<h2 className="text-3xl font-bold">
 
 {totalProducts}
 
@@ -408,7 +477,7 @@ Shetkari Agro Inventory
 
 
 
-<div className="bg-white shadow rounded-2xl p-5">
+<div className="bg-white shadow rounded-xl p-5">
 
 <p>Total Stock</p>
 
@@ -422,7 +491,8 @@ Shetkari Agro Inventory
 
 
 
-<div className="bg-white shadow rounded-2xl p-5">
+
+<div className="bg-white shadow rounded-xl p-5">
 
 <p>Low Stock</p>
 
@@ -436,7 +506,8 @@ Shetkari Agro Inventory
 
 
 
-<div className="bg-white shadow rounded-2xl p-5">
+
+<div className="bg-white shadow rounded-xl p-5">
 
 <p>Inventory Value</p>
 
@@ -455,9 +526,8 @@ Shetkari Agro Inventory
 
 
 
-
-
 <div className="grid xl:grid-cols-3 gap-6">
+
 
 
 <ProductForm
@@ -475,16 +545,19 @@ selectedProduct={selectedProduct}
 <div className="xl:col-span-2">
 
 
-<div className="bg-white shadow rounded-2xl p-4 mb-4 grid md:grid-cols-3 gap-3">
+
+<div className="bg-white shadow rounded-xl p-4 grid md:grid-cols-3 gap-3 mb-4">
 
 
 <input
 
-placeholder="🔍 Search Product"
+placeholder="Search Product"
 
 value={search}
 
-onChange={(e)=>setSearch(e.target.value)}
+onChange={
+e=>setSearch(e.target.value)
+}
 
 className="border p-3 rounded-xl"
 
@@ -492,20 +565,20 @@ className="border p-3 rounded-xl"
 
 
 
-
-
 <select
 
 value={category}
 
-onChange={(e)=>setCategory(e.target.value)}
+onChange={
+e=>setCategory(e.target.value)
+}
 
 className="border p-3 rounded-xl"
 
 >
 
-
 {
+
 categories.map(c=>(
 
 <option key={c}>
@@ -518,9 +591,7 @@ categories.map(c=>(
 
 }
 
-
 </select>
-
 
 
 
@@ -529,11 +600,14 @@ categories.map(c=>(
 
 value={sort}
 
-onChange={(e)=>setSort(e.target.value)}
+onChange={
+e=>setSort(e.target.value)
+}
 
 className="border p-3 rounded-xl"
 
 >
+
 
 <option value="latest">
 Latest
@@ -558,24 +632,62 @@ Stock
 </select>
 
 
-
 </div>
 
 
 
 
 
+
+<div className="flex gap-3 mb-4 flex-wrap">
+
+
 <button
 
-onClick={exportCSV}
+onClick={downloadTemplate}
 
-className="bg-yellow-500 text-white px-4 py-2 rounded-xl mb-4"
+className="bg-blue-600 text-white px-4 py-2 rounded-xl"
 
 >
 
-⬇ Export CSV
+📄 Download Template
 
 </button>
+
+
+
+
+<input
+
+type="file"
+
+accept=".csv,.xlsx,.xls"
+
+onChange={
+e=>setImportFile(e.target.files[0])
+}
+
+className="border p-2 rounded-xl"
+
+/>
+
+
+
+
+<button
+
+onClick={handleImport}
+
+className="bg-green-700 text-white px-4 py-2 rounded-xl"
+
+>
+
+⬆ Import CSV / Excel
+
+</button>
+
+
+</div>
 
 
 
@@ -587,8 +699,8 @@ products={paginatedProducts}
 
 onDelete={handleDelete}
 
-onEdit={(product)=>
-setSelectedProduct(product)
+onEdit={
+product=>setSelectedProduct(product)
 }
 
 />
@@ -616,9 +728,9 @@ Previous
 
 
 
-<span className="px-4 py-2">
+<span>
 
-{page} / {totalPages || 1}
+{page}/{totalPages || 1}
 
 </span>
 
@@ -650,9 +762,7 @@ Next
 </div>
 
 
-
 </div>
-
 
 );
 

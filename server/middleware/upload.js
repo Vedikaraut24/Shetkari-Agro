@@ -1,51 +1,34 @@
 import multer from "multer";
 import path from "path";
 
+
 const storage = multer.diskStorage({
 
-    destination(req, file, cb) {
+    destination:(req,file,cb)=>{
 
-        cb(null, "uploads/imports");
+        cb(null,"uploads/");
 
     },
 
-    filename(req, file, cb) {
+
+    filename:(req,file,cb)=>{
 
         cb(
             null,
-            Date.now() + path.extname(file.originalname)
+            Date.now()+"-"+file.originalname
         );
 
     }
 
 });
 
-const fileFilter = (req, file, cb) => {
 
-    const allowed = [
-        ".csv",
-        ".xlsx"
-    ];
 
-    const extension =
-        path.extname(file.originalname).toLowerCase();
+const upload = multer({
 
-    if (allowed.includes(extension)) {
-
-        cb(null, true);
-
-    } else {
-
-        cb(new Error("Only CSV or XLSX files allowed"));
-
-    }
-
-};
-
-export default multer({
-
-    storage,
-
-    fileFilter
+    storage:storage
 
 });
+
+
+export default upload;
