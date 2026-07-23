@@ -1,157 +1,110 @@
 import { NavLink } from "react-router-dom";
-
 import {
-    FaTachometerAlt,
-    FaBoxOpen,
-    FaTags,
-    FaUsers,
-    FaShoppingCart,
-    FaExchangeAlt,
-    FaChartBar,
-    FaCog,
-    FaSignOutAlt
-} from "react-icons/fa";
+    LayoutDashboard,
+    Package,
+    FolderTree,
+    Users,
+    ShoppingCart,
+    Receipt,
+    FileText,
+    Settings,
+    LogOut
+} from "lucide-react";
 
 export default function Sidebar() {
 
     const menu = [
-
         {
             name: "Dashboard",
-            icon: FaTachometerAlt,
-            path: "/dashboard"
+            path: "/dashboard",
+            icon: LayoutDashboard
         },
-
         {
             name: "Products",
-            icon: FaBoxOpen,
-            path: "/products"
+            path: "/products",
+            icon: Package
         },
-
         {
             name: "Categories",
-            icon: FaTags,
-            path: "/categories"
+            path: "/categories",
+            icon: FolderTree
         },
-
         {
             name: "Customers",
-            icon: FaUsers,
-            path: "/customers"
+            path: "/customers",
+            icon: Users
         },
-
         {
             name: "Billing",
-            icon: FaShoppingCart,
-            path: "/billing"
+            path: "/billing",
+            icon: ShoppingCart
         },
-
         {
             name: "Transactions",
-            icon: FaExchangeAlt,
-            path: "/transactions"
+            path: "/transactions",
+            icon: Receipt
         },
-
         {
             name: "Reports",
-            icon: FaChartBar,
-            path: "/reports"
+            path: "/reports",
+            icon: FileText
         },
-
         {
             name: "Settings",
-            icon: FaCog,
-            path: "/settings"
+            path: "/settings",
+            icon: Settings
         }
-
     ];
 
     return (
-
-        <aside className="fixed left-0 top-0 w-64 h-screen bg-green-800 text-white shadow-xl">
+        <aside className="fixed left-0 top-0 h-screen w-64 bg-green-800 text-white shadow-lg">
 
             <div className="p-6 border-b border-green-700">
 
                 <h1 className="text-2xl font-bold">
-
                     🌾 Shetkari Agro
-
                 </h1>
 
                 <p className="text-green-200 text-sm">
-
                     Inventory System
-
                 </p>
 
             </div>
 
             <nav className="mt-5">
 
-                {
+                {menu.map((item) => {
 
-                    menu.map(item => {
+                    const Icon = item.icon;
 
-                        const Icon = item.icon;
+                    return (
+                        <NavLink
+                            key={item.path}
+                            to={item.path}
+                            className={({ isActive }) =>
+                                `flex items-center gap-3 px-6 py-4 transition ${
+                                    isActive
+                                        ? "bg-green-600"
+                                        : "hover:bg-green-700"
+                                }`
+                            }
+                        >
+                            <Icon size={20} />
+                            <span>{item.name}</span>
+                        </NavLink>
+                    );
 
-                        return (
-
-                            <NavLink
-
-                                key={item.name}
-
-                                to={item.path}
-
-                                className={({ isActive }) =>
-
-                                    `flex items-center gap-4 px-6 py-4 transition-all
-
-                                    ${
-
-                                        isActive
-
-                                            ? "bg-green-600"
-
-                                            : "hover:bg-green-700"
-
-                                    }`
-
-                                }
-
-                            >
-
-                                <Icon size={20} />
-
-                                <span>
-
-                                    {item.name}
-
-                                </span>
-
-                            </NavLink>
-
-                        );
-
-                    })
-
-                }
+                })}
 
             </nav>
 
             <button
-
-                className="absolute bottom-6 left-6 flex items-center gap-3"
-
+                className="absolute bottom-6 left-6 flex items-center gap-2 text-red-200 hover:text-white"
             >
-
-                <FaSignOutAlt />
-
-                Logout
-
+                <LogOut size={20} />
+                <span>Logout</span>
             </button>
 
         </aside>
-
     );
-
 }

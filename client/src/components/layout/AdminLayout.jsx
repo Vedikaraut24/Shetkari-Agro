@@ -3,32 +3,17 @@ import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Navbar from "./Navbar";
 
-
 export default function AdminLayout() {
 
     return (
 
-        <div className="flex min-h-screen bg-gray-100">
-
-
-            {/* Sidebar */}
+        <div className="flex bg-gray-100 min-h-screen">
 
             <Sidebar />
 
-
-
-            {/* Main Content */}
-
             <div className="flex-1 ml-64">
 
-
-                {/* Navbar */}
-
                 <Navbar />
-
-
-
-                {/* Page Content */}
 
                 <main className="p-6">
 
@@ -36,9 +21,7 @@ export default function AdminLayout() {
 
                 </main>
 
-
             </div>
-
 
         </div>
 

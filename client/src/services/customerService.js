@@ -1,48 +1,85 @@
 import axios from "axios";
 
-
-const API_URL =
-"http://localhost:5000/api/customers";
+const API_URL = "http://localhost:5000/api/customers";
 
 
 
+// =========================
+// GET ALL CUSTOMERS
+// =========================
 
-// GET CUSTOMERS
+export const getCustomers = async () => {
 
-export const getCustomers = async()=>{
+    const response = await axios.get(API_URL);
 
-
-const response =
-await axios.get(
-API_URL
-);
-
-
-return response.data;
-
+    return response.data;
 
 };
 
 
 
-
-
+// =========================
 // CREATE CUSTOMER
+// =========================
 
-export const createCustomer = async(data)=>{
+export const createCustomer = async (customer) => {
+
+    const response = await axios.post(
+
+        API_URL,
+
+        customer,
+
+        {
+
+            headers: {
+
+                "Content-Type": "application/json"
+
+            }
+
+        }
+
+    );
+
+    return response.data;
+
+};
 
 
-const response =
-await axios.post(
 
-API_URL,
+// =========================
+// UPDATE CUSTOMER
+// =========================
 
-data
+export const updateCustomer = async (id, customer) => {
 
-);
+    const response = await axios.put(
+
+        `${API_URL}/${id}`,
+
+        customer
+
+    );
+
+    return response.data;
+
+};
 
 
-return response.data;
 
+// =========================
+// DELETE CUSTOMER
+// =========================
+
+export const deleteCustomer = async (id) => {
+
+    const response = await axios.delete(
+
+        `${API_URL}/${id}`
+
+    );
+
+    return response.data;
 
 };
