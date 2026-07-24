@@ -20,15 +20,93 @@ import reportRoutes from "./routes/reportRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 
-
 // =====================
-// Config
+// Environment
 // =====================
 
 dotenv.config();
 
 
 const app = express();
+
+
+// =====================
+// CORS
+// =====================
+
+
+const allowedOrigins = [
+
+    "http://localhost:5173",
+
+    "https://shetkari-agro-5vhb-jw6j8w84g-vedika9.vercel.app"
+
+];
+
+
+
+app.use(
+
+    cors({
+
+        origin: (origin, callback) => {
+
+
+            // Allow Postman and server requests
+
+            if(!origin){
+
+                return callback(null, true);
+
+            }
+
+
+
+            if(allowedOrigins.includes(origin)){
+
+
+                return callback(null, true);
+
+
+            }
+
+
+
+            return callback(
+                new Error(
+                    "CORS Error: Origin not allowed"
+                )
+            );
+
+
+        },
+
+
+        credentials:true,
+
+
+        methods:[
+
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE",
+            "OPTIONS"
+
+        ],
+
+
+        allowedHeaders:[
+
+            "Content-Type",
+            "Authorization"
+
+        ]
+
+    })
+
+);
 
 
 
@@ -38,25 +116,8 @@ const app = express();
 
 
 app.use(
-
-    cors({
-
-        origin:[
-            "https://your-vercel-app.vercel.app"
-        ],
-
-        credentials:true
-
-    })
-
-);
-
-
-
-app.use(
     helmet()
 );
-
 
 
 app.use(
@@ -64,10 +125,10 @@ app.use(
 );
 
 
-
 app.use(
     express.json()
 );
+
 
 
 
@@ -125,8 +186,10 @@ app.use(
 
 
 
+
+
 // =====================
-// Test Route
+// Test API
 // =====================
 
 
@@ -134,15 +197,55 @@ app.get(
     "/",
     (req,res)=>{
 
-        res.json({
+
+        res.status(200).json({
+
+            success:true,
 
             message:
             "Shetkari Agro API Running"
 
         });
 
+
     }
 );
+
+
+
+
+
+
+// =====================
+// Error Handler
+// =====================
+
+
+app.use(
+
+    (err,req,res,next)=>{
+
+
+        console.log(err.message);
+
+
+        res.status(500).json({
+
+            success:false,
+
+            message:
+            err.message
+
+        });
+
+
+    }
+
+);
+
+
+
+
 
 
 
@@ -176,9 +279,11 @@ mongoose.connect(
 
         ()=>{
 
+
             console.log(
                 `Server running on port ${PORT}`
             );
+
 
         }
 
@@ -187,13 +292,14 @@ mongoose.connect(
 
 })
 
-
-.catch(error=>{
+.catch((error)=>{
 
 
     console.log(
+
         "MongoDB Error:",
-        error
+        error.message
+
     );
 
 
