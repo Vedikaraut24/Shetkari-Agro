@@ -20,8 +20,9 @@ import reportRoutes from "./routes/reportRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 
+
 // =====================
-// Environment
+// Config
 // =====================
 
 dotenv.config();
@@ -30,8 +31,9 @@ dotenv.config();
 const app = express();
 
 
+
 // =====================
-// CORS
+// CORS Configuration
 // =====================
 
 
@@ -39,7 +41,7 @@ const allowedOrigins = [
 
     "http://localhost:5173",
 
-    "https://shetkari-agro-5vhb-jw6j8w84g-vedika9.vercel.app"
+    "https://shetkari-agro.vercel.app"
 
 ];
 
@@ -49,33 +51,49 @@ app.use(
 
     cors({
 
-        origin: (origin, callback) => {
+        origin:(origin,callback)=>{
 
 
-            // Allow Postman and server requests
+            // Allow tools like Postman
 
             if(!origin){
 
-                return callback(null, true);
+                return callback(null,true);
 
             }
 
 
 
-            if(allowedOrigins.includes(origin)){
+            // Allow all Vercel deployments
+
+            if(
+                origin.endsWith(".vercel.app")
+            ){
+
+                return callback(null,true);
+
+            }
 
 
-                return callback(null, true);
 
+            // Allow listed domains
+
+            if(
+                allowedOrigins.includes(origin)
+            ){
+
+                return callback(null,true);
 
             }
 
 
 
             return callback(
+
                 new Error(
-                    "CORS Error: Origin not allowed"
+                    "CORS blocked this origin"
                 )
+
             );
 
 
@@ -110,6 +128,9 @@ app.use(
 
 
 
+
+
+
 // =====================
 // Middleware
 // =====================
@@ -132,6 +153,8 @@ app.use(
 
 
 
+
+
 // =====================
 // API Routes
 // =====================
@@ -143,10 +166,12 @@ app.use(
 );
 
 
+
 app.use(
     "/api/products",
     productRoutes
 );
+
 
 
 app.use(
@@ -155,10 +180,12 @@ app.use(
 );
 
 
+
 app.use(
     "/api/customers",
     customerRoutes
 );
+
 
 
 app.use(
@@ -167,16 +194,19 @@ app.use(
 );
 
 
+
 app.use(
     "/api/transactions",
     transactionRoutes
 );
 
 
+
 app.use(
     "/api/reports",
     reportRoutes
 );
+
 
 
 app.use(
@@ -188,13 +218,16 @@ app.use(
 
 
 
+
 // =====================
-// Test API
+// Health Check
 // =====================
 
 
 app.get(
+
     "/",
+
     (req,res)=>{
 
 
@@ -203,13 +236,15 @@ app.get(
             success:true,
 
             message:
-            "Shetkari Agro API Running"
+            "Shetkari Agro API Running Successfully"
 
         });
 
 
     }
+
 );
+
 
 
 
@@ -226,7 +261,10 @@ app.use(
     (err,req,res,next)=>{
 
 
-        console.log(err.message);
+        console.log(
+            "Server Error:",
+            err.message
+        );
 
 
         res.status(500).json({
@@ -242,6 +280,7 @@ app.use(
     }
 
 );
+
 
 
 
@@ -273,6 +312,7 @@ mongoose.connect(
     );
 
 
+
     app.listen(
 
         PORT,
@@ -281,7 +321,9 @@ mongoose.connect(
 
 
             console.log(
+
                 `Server running on port ${PORT}`
+
             );
 
 
@@ -291,6 +333,7 @@ mongoose.connect(
 
 
 })
+
 
 .catch((error)=>{
 
