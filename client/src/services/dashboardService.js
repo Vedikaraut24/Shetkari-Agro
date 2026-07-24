@@ -1,11 +1,35 @@
-import axios from "axios";
+import API from "./api";
 
-const API_URL = "http://localhost:5000/api/dashboard";
 
 export const getDashboard = async () => {
 
-    const response = await axios.get(API_URL);
+    try {
 
-    return response.data;
+        const response = await API.get(
+            "/dashboard"
+        );
+
+
+        console.log(
+            "Dashboard API Response:",
+            response.data
+        );
+
+
+        return response.data;
+
+
+    } catch(error) {
+
+
+        console.log(
+            "Dashboard API Error:",
+            error.response?.data || error.message
+        );
+
+
+        throw error;
+
+    }
 
 };

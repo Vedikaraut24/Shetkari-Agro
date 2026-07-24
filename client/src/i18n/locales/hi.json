@@ -1,0 +1,14 @@
+{
+  "shopName": "शेतकरी एग्रो",
+  "settings": "सिस्टम सेटिंग्स और कॉन्फ़िगरेशन",
+  "products": "उत्पाद",
+  "customers": "ग्राहक",
+  "bills": "बिल",
+  "shopInformation": "दुकान जानकारी",
+  "adminName": "प्रशासक नाम",
+  "save": "परिवर्तन सहेजें",
+  "applicationSettings": "एप्लिकेशन सेटिंग्स",
+  "language": "भाषा",
+  "chooseLanguage": "एप्लिकेशन भाषा चुनें",
+  "databaseConnected": "डेटाबेस कनेक्टेड"
+}

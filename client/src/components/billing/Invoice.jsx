@@ -1,314 +1,326 @@
 import { generateInvoice } from "../../utils/generateInvoice";
 
+export default function Invoice({ bill }) {
 
-export default function Invoice({bill}){
+  if (!bill) return null;
 
+  return (
 
-return (
+    <div
+      id="invoice"
+      className="bg-white max-w-5xl mx-auto shadow-2xl rounded-2xl p-8 border border-gray-200"
+    >
 
-<div className="bg-white shadow-xl rounded-xl p-8">
+      {/* Header */}
 
+      <div className="flex justify-between items-start border-b-2 border-green-700 pb-6">
 
-<div className="flex justify-between items-center border-b pb-5">
+        <div className="flex items-center gap-4">
 
+          <div className="w-20 h-20 rounded-full bg-gradient-to-r from-green-700 to-yellow-500 flex items-center justify-center text-4xl shadow-lg">
+            🌾
+          </div>
 
-<div className="flex items-center gap-4">
+          <div>
 
+            <h1 className="text-4xl font-bold text-green-700">
+              शेतकरी अॅग्रो
+            </h1>
 
-<div className="bg-green-700 rounded-full w-16 h-16 flex items-center justify-center">
+            <p className="text-gray-600 mt-1">
+              Agricultural Products & Services
+            </p>
 
-<span className="text-3xl">
+            <p className="text-sm text-gray-500">
+              Maratha Complex,
+              Near HDFC Bank,
+              Bhaktidam Road,
+              Chandur Bazaar,
+              Amravati
+            </p>
 
-🌾
+            <p className="text-sm text-gray-500">
+              Phone : +91 9876543210
+            </p>
 
-</span>
+          </div>
 
-</div>
+        </div>
 
+        <div className="text-right">
 
+          <h2 className="text-3xl font-bold text-gray-700">
+            TAX INVOICE
+          </h2>
 
-<div>
+          <p className="mt-3">
+            <strong>Invoice No :</strong> {bill._id}
+          </p>
 
-<h1 className="text-3xl font-bold text-green-700">
+          <p>
+            <strong>Date :</strong>{" "}
+            {new Date(
+              bill.createdAt || Date.now()
+            ).toLocaleDateString()}
+          </p>
 
-शेतकरी अॅग्रो
+          <p>
+            <strong>Status :</strong>{" "}
+            <span className="text-green-700 font-semibold">
+              {bill.paymentStatus}
+            </span>
+          </p>
 
-</h1>
+        </div>
 
+      </div>
 
-<p className="text-gray-500">
+      {/* Customer & Shop */}
 
-Agriculture Products Store
+      <div className="grid md:grid-cols-2 gap-6 mt-8">
 
-</p>
+        <div className="bg-green-50 rounded-xl p-5">
 
+          <h3 className="text-lg font-bold text-green-700 mb-3">
+            Customer Details
+          </h3>
 
-<p className="text-sm">
+          <p>
+            <strong>Name :</strong>{" "}
+            {bill.customer?.name ||
+              bill.customerName ||
+              "-"}
+          </p>
 
-📍 Maharashtra, India
+          <p>
+            <strong>Phone :</strong>{" "}
+            {bill.customer?.phone ||
+              bill.customerPhone ||
+              "-"}
+          </p>
 
-</p>
+          <p>
+            <strong>Address :</strong>{" "}
+            {bill.customer?.address ||
+              bill.customerAddress ||
+              "-"}
+          </p>
 
+        </div>
 
-</div>
+        <div className="bg-gray-50 rounded-xl p-5">
 
+          <h3 className="text-lg font-bold text-green-700 mb-3">
+            Shop Details
+          </h3>
 
-</div>
+          <p className="font-bold text-lg">
+            🌾 शेतकरी अॅग्रो
+          </p>
 
+          <p>
+            Maratha Complex
+          </p>
 
+          <p>
+            Near HDFC Bank
+          </p>
 
+          <p>
+            Bhaktidam Road
+          </p>
 
-<div className="text-right">
+          <p>
+            Chandur Bazaar, Amravati
+          </p>
 
-<h2 className="text-2xl font-bold">
+        </div>
 
-INVOICE
+      </div>
 
-</h2>
+      {/* Products */}
 
+      <div className="overflow-x-auto mt-8">
 
-<p>
+        <table className="w-full border border-gray-300">
 
-Date: {new Date().toLocaleDateString()}
+          <thead>
 
-</p>
+            <tr className="bg-green-700 text-white">
 
+              <th className="border p-3">
+                Product
+              </th>
 
-</div>
+              <th className="border">
+                Qty
+              </th>
 
+              <th className="border">
+                Price
+              </th>
 
-</div>
+              <th className="border">
+                GST
+              </th>
 
+              <th className="border">
+                Total
+              </th>
 
+            </tr>
 
+          </thead>
 
+          <tbody>
 
-<div className="mt-6 grid md:grid-cols-2 gap-5">
+            {bill.items.map((item) => (
 
+              <tr
+                key={item._id}
+                className="border-b text-center hover:bg-green-50"
+              >
 
-<div className="bg-green-50 p-4 rounded-lg">
+                <td className="border p-3">
+                  {item.productName}
+                </td>
 
+                <td className="border">
+                  {item.quantity}
+                </td>
 
-<h3 className="font-bold text-green-700">
+                <td className="border">
+                  ₹ {item.price}
+                </td>
 
-Customer Details
+                <td className="border">
+                  {item.gst}%
+                </td>
 
-</h3>
+                <td className="border font-semibold">
+                  ₹ {item.total}
+                </td>
 
+              </tr>
 
-<p>
+            ))}
 
-Name: {bill.customer?.name}
+          </tbody>
 
-</p>
+        </table>
 
+      </div>
+            {/* Totals */}
 
-<p>
+      <div className="flex justify-end mt-8">
 
-Phone: {bill.customer?.phone}
+        <div className="w-full md:w-96 bg-green-50 border border-green-200 rounded-xl p-6 shadow">
 
-</p>
+          <div className="flex justify-between mb-3">
+            <span className="font-medium">Subtotal</span>
+            <span>₹ {bill.subTotal || 0}</span>
+          </div>
 
+          <div className="flex justify-between mb-3">
+            <span className="font-medium">GST Amount</span>
+            <span>₹ {bill.gstAmount || 0}</span>
+          </div>
 
-</div>
+          <hr className="my-3" />
 
+          <div className="flex justify-between text-2xl font-bold text-green-700">
+            <span>Grand Total</span>
+            <span>₹ {bill.grandTotal || 0}</span>
+          </div>
 
+        </div>
 
-<div className="bg-gray-50 p-4 rounded-lg">
+      </div>
 
+      {/* Thank You */}
 
-<h3 className="font-bold">
+      <div className="mt-10 bg-green-50 rounded-xl p-5">
 
-Shop Address
+        <h3 className="text-lg font-bold text-green-700 mb-2">
+          Thank You!
+        </h3>
 
-</h3>
+        <p className="text-gray-700">
+          Thank you for shopping with
+          <span className="font-bold text-green-700">
+            {" "}🌾 शेतकरी अॅग्रो
+          </span>.
+        </p>
 
+        <p className="text-gray-600 mt-2">
+          We appreciate your trust in us and look forward to serving you again.
+        </p>
 
-<p>
+      </div>
 
-शेतकरी अॅग्रो
+      {/* Footer */}
 
-</p>
+      <div className="border-t-2 border-green-700 mt-10 pt-6">
 
+        <div className="grid md:grid-cols-2 gap-8">
 
-<p>
+          <div>
 
-Nagpur, Maharashtra
+            <h3 className="font-bold text-green-700 mb-2">
+              Terms & Conditions
+            </h3>
 
-</p>
+            <ul className="text-sm text-gray-600 space-y-2 list-disc ml-5">
 
+              <li>
+                Goods once sold will not be taken back.
+              </li>
 
-</div>
+              <li>
+                Please keep this invoice for future reference.
+              </li>
 
+              <li>
+                Subject to Chandur Bazaar jurisdiction.
+              </li>
 
-</div>
+            </ul>
 
+          </div>
 
+          <div className="text-right">
 
+            <div className="h-20"></div>
 
+            <p className="font-semibold">
+              Authorized Signature
+            </p>
 
+            <p className="font-bold text-green-700 mt-3">
+              🌾 शेतकरी अॅग्रो
+            </p>
 
-<table className="w-full mt-8 border">
+          </div>
 
+        </div>
 
-<thead className="bg-green-700 text-white">
+      </div>
 
+      {/* Download */}
 
-<tr>
+      <div className="flex justify-center mt-10">
 
+        <button
+          onClick={() => generateInvoice(bill)}
+          className="bg-gradient-to-r from-green-700 to-yellow-500 hover:from-green-800 hover:to-yellow-600 text-white font-semibold px-8 py-3 rounded-xl shadow-lg transition-all"
+        >
+          📄 Download Invoice PDF
+        </button>
 
-<th className="p-3">
+      </div>
 
-Product
+    </div>
 
-</th>
-
-
-<th>
-
-Qty
-
-</th>
-
-
-<th>
-
-Price
-
-</th>
-
-
-<th>
-
-Total
-
-</th>
-
-
-</tr>
-
-
-</thead>
-
-
-
-<tbody>
-
-
-{
-
-bill.items.map(item=>(
-
-
-<tr key={item._id}
-
-className="border-b text-center"
-
-
->
-
-
-<td className="p-3">
-
-{item.productName}
-
-</td>
-
-
-<td>
-
-{item.quantity}
-
-</td>
-
-
-<td>
-
-₹{item.price}
-
-</td>
-
-
-<td>
-
-₹{item.total}
-
-</td>
-
-
-</tr>
-
-
-))
-
-
-}
-
-
-</tbody>
-
-
-</table>
-
-
-
-
-
-
-<div className="mt-6 text-right space-y-2">
-
-
-<p>
-
-Subtotal:
-₹{bill.subTotal}
-
-</p>
-
-
-<p>
-
-GST:
-₹{bill.gstAmount}
-
-</p>
-
-
-<h2 className="text-2xl font-bold text-green-700">
-
-Grand Total:
-₹{bill.grandTotal}
-
-</h2>
-
-
-</div>
-
-
-
-
-
-
-<button
-
-onClick={()=>generateInvoice(bill)}
-
-className="mt-6 bg-green-700 text-white px-8 py-3 rounded-lg"
-
->
-
-
-Download Invoice PDF
-
-
-</button>
-
-
-
-</div>
-
-
-);
-
+  );
 
 }

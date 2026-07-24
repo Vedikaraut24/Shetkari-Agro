@@ -16,12 +16,18 @@ export const createBill = async (req, res) => {
         const {
 
             customer,
+
             items,
+
             paymentStatus = "Paid"
 
         } = req.body;
 
 
+
+        // =======================
+        // VALIDATION
+        // =======================
 
         if (!customer?.name || !customer?.phone) {
 
@@ -47,9 +53,9 @@ export const createBill = async (req, res) => {
 
 
 
-        // =========================
+        // =======================
         // FIND OR CREATE CUSTOMER
-        // =========================
+        // =======================
 
         let customerData = await Customer.findOne({
 
@@ -61,7 +67,6 @@ export const createBill = async (req, res) => {
 
         if (!customerData) {
 
-
             customerData = await Customer.create({
 
                 name: customer.name,
@@ -72,6 +77,15 @@ export const createBill = async (req, res) => {
 
             });
 
+        }
+
+        else {
+
+            customerData.name = customer.name;
+
+            customerData.address = customer.address || "";
+
+            await customerData.save();
 
         }
 
@@ -85,26 +99,19 @@ export const createBill = async (req, res) => {
 
 
 
-        // =========================
+        // =======================
         // PROCESS PRODUCTS
-        // =========================
+        // =======================
 
         for (const item of items) {
 
-
-            const product = await Product.findById(
-
-                item._id
-
-            );
-
-
+            const product = await Product.findById(item._id);
 
             if (!product) {
 
                 return res.status(404).json({
 
-                    message: "Product not found"
+                    message: `Product not found`
 
                 });
 
@@ -112,45 +119,31 @@ export const createBill = async (req, res) => {
 
 
 
-            if (
-
-                product.currentStock < item.quantity
-
-            ) {
+            if (product.currentStock < Number(item.quantity)) {
 
                 return res.status(400).json({
 
-                    message:
-
-                    `${product.productName} stock unavailable`
+                    message: `${product.productName} stock unavailable`
 
                 });
 
             }
-
 
 
 
             const quantity = Number(item.quantity);
 
+            const price = Number(product.sellingPrice);
 
-            const price = product.sellingPrice;
-
-
-            const gst = product.gst || 0;
-
+            const gst = Number(product.gst || 0);
 
             const total = quantity * price;
 
-
-            const gstValue =
-
-                (total * gst) / 100;
+            const gstValue = (total * gst) / 100;
 
 
 
             subTotal += total;
-
 
             gstAmount += gstValue;
 
@@ -160,9 +153,7 @@ export const createBill = async (req, res) => {
 
                 product: product._id,
 
-                productName:
-
-                product.productName,
+                productName: product.productName,
 
                 quantity,
 
@@ -176,237 +167,180 @@ export const createBill = async (req, res) => {
 
 
 
-            // Reduce Stock
-
             product.currentStock -= quantity;
 
-
             await product.save();
-
 
         }
 
 
 
-
-        const grandTotal =
-
-            subTotal + gstAmount;
+        const grandTotal = subTotal + gstAmount;
 
 
 
-
-        // =========================
+        // =======================
         // CREATE BILL
-        // =========================
+        // =======================
 
+        const newBill = await Bill.create({
 
-        const bill = await Bill.create({
-
-            customer:
-
-            customerData._id,
-
+            customer: customerData._id,
 
             items: billItems,
 
-
             subTotal,
-
 
             gstAmount,
 
-
             grandTotal,
 
-
             paymentStatus
-
 
         });
 
 
 
-
-
-        // =========================
+        // =======================
         // CREATE TRANSACTION
-        // =========================
-
+        // =======================
 
         await Transaction.create({
 
-            bill: bill._id,
+            bill: newBill._id,
 
-
-            customer:
-
-            customerData._id,
-
+            customer: customerData._id,
 
             amount: grandTotal,
 
-
-            type:"Sale",
-
+            type: "Sale",
 
             paymentStatus
-
 
         });
 
 
+
+        // =======================
+        // POPULATE CUSTOMER
+        // =======================
+
+        const bill = await Bill.findById(newBill._id)
+
+            .populate("customer")
+
+            .populate("items.product");
 
 
 
         res.status(201).json({
 
-            message:
-
-            "Bill Generated Successfully",
-
+            message: "Bill Generated Successfully",
 
             bill
 
         });
 
-
     }
 
-    catch(error){
-
+    catch (error) {
 
         console.log(error);
 
-
         res.status(500).json({
 
-            message:error.message
+            message: error.message
 
         });
-
 
     }
 
 };
-
-
-
-
-
-
 // =======================
 // GET ALL BILLS
 // =======================
 
+export const getBills = async (req, res) => {
 
-export const getBills = async(req,res)=>{
-
-
-    try{
-
+    try {
 
         const bills = await Bill.find()
 
-        .populate("customer")
+            .populate("customer")
 
-        .populate("items.product")
+            .populate("items.product")
 
-        .sort({
+            .sort({
 
-            createdAt:-1
+                createdAt: -1
 
-        });
+            });
 
-
-
-        res.json(bills);
-
-
+        res.status(200).json(bills);
 
     }
 
-    catch(error){
+    catch (error) {
 
+        console.log(error);
 
         res.status(500).json({
 
-            message:error.message
+            message: error.message
 
         });
 
-
     }
-
 
 };
 
 
 
-
-
-
 // =======================
-// GET SINGLE BILL
+// GET BILL BY ID
 // =======================
 
+export const getBillById = async (req, res) => {
 
-export const getBillById = async(req,res)=>{
+    try {
 
+        const bill = await Bill.findById(req.params.id)
 
-    try{
+            .populate("customer")
 
-
-        const bill = await Bill.findById(
-
-            req.params.id
-
-        )
-
-        .populate("customer")
-
-        .populate("items.product");
+            .populate("items.product");
 
 
 
-
-        if(!bill){
-
+        if (!bill) {
 
             return res.status(404).json({
 
-                message:"Bill not found"
+                message: "Bill not found"
 
             });
-
 
         }
 
 
 
-        res.json(bill);
-
-
+        res.status(200).json(bill);
 
     }
 
-    catch(error){
+    catch (error) {
 
+        console.log(error);
 
         res.status(500).json({
 
-            message:error.message
+            message: error.message
 
         });
 
-
     }
 
-
 };
-
-
-
 
 
 
@@ -414,107 +348,76 @@ export const getBillById = async(req,res)=>{
 // DELETE BILL
 // =======================
 
+export const deleteBill = async (req, res) => {
 
-export const deleteBill = async(req,res)=>{
+    try {
 
+        const bill = await Bill.findById(req.params.id);
 
-    try{
-
-
-        const bill = await Bill.findById(
-
-            req.params.id
-
-        );
-
-
-
-        if(!bill){
-
+        if (!bill) {
 
             return res.status(404).json({
 
-                message:"Bill not found"
+                message: "Bill not found"
 
             });
 
-
         }
 
 
 
+        // Restore Product Stock
 
-        // Restore Stock
+        for (const item of bill.items) {
 
-        for(const item of bill.items){
+            const product = await Product.findById(item.product);
 
+            if (product) {
 
-            const product = await Product.findById(
-
-                item.product
-
-            );
-
-
-
-            if(product){
-
-
-                product.currentStock +=
-
-                item.quantity;
-
-
+                product.currentStock += Number(item.quantity);
 
                 await product.save();
 
-
             }
-
 
         }
 
 
 
+        // Delete Related Transaction
 
         await Transaction.deleteMany({
 
-            bill:bill._id
+            bill: bill._id
 
         });
 
 
 
+        // Delete Bill
 
-        await Bill.findByIdAndDelete(
-
-            bill._id
-
-        );
+        await Bill.findByIdAndDelete(bill._id);
 
 
 
-        res.json({
+        res.status(200).json({
 
-            message:"Bill Deleted Successfully"
+            message: "Bill Deleted Successfully"
 
         });
-
-
 
     }
 
-    catch(error){
+    catch (error) {
 
+        console.log(error);
 
         res.status(500).json({
 
-            message:error.message
+            message: error.message
 
         });
 
-
     }
-
 
 };

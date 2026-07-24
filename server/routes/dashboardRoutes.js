@@ -1,18 +1,24 @@
 import express from "express";
 
 import {
-getDashboard
-}
-from "../controllers/dashboardController.js";
+    getDashboard
+} from "../controllers/dashboardController.js";
+
+import authMiddleware from "../middleware/authMiddleware.js";
+import roleMiddleware from "../middleware/roleMiddleware.js";
 
 
 const router = express.Router();
 
 
+
 router.get(
-"/",
-getDashboard
+    "/",
+    authMiddleware,
+    roleMiddleware("admin"),
+    getDashboard
 );
+
 
 
 export default router;

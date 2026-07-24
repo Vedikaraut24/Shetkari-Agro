@@ -5,120 +5,196 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 
+
+// =====================
 // Routes
+// =====================
+
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
 import billRoutes from "./routes/billRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
-import settingsRoutes from "./routes/settingsRoutes.js";
-import reportRoutes from "./routes/reportRoutes.js";   // ✅ NEW
+
+
+
+// =====================
+// Config
+// =====================
 
 dotenv.config();
 
+
 const app = express();
+
+
 
 // =====================
 // Middleware
 // =====================
 
-app.use(cors());
-
-app.use(express.json());
 
 app.use(
-    express.urlencoded({
-        extended: true
+
+    cors({
+
+        origin:[
+            "http://localhost:5173"
+        ],
+
+        credentials:true
+
     })
+
 );
 
-app.use(helmet());
 
-app.use(morgan("dev"));
 
-// =====================
-// Database Connection
-// =====================
+app.use(
+    helmet()
+);
 
-mongoose
-    .connect(process.env.MONGO_URI)
-    .then(() => {
 
-        console.log("MongoDB Connected");
 
-    })
-    .catch((error) => {
+app.use(
+    morgan("dev")
+);
 
-        console.log("MongoDB Connection Error");
-        console.log(error);
 
-    });
+
+app.use(
+    express.json()
+);
+
+
 
 // =====================
 // API Routes
 // =====================
 
-app.use("/api/auth", authRoutes);
 
-app.use("/api/products", productRoutes);
+app.use(
+    "/api/auth",
+    authRoutes
+);
 
-app.use("/api/categories", categoryRoutes);
 
-app.use("/api/customers", customerRoutes);
+app.use(
+    "/api/products",
+    productRoutes
+);
 
-app.use("/api/bills", billRoutes);
 
-app.use("/api/transactions", transactionRoutes);
+app.use(
+    "/api/categories",
+    categoryRoutes
+);
 
-app.use("/api/dashboard", dashboardRoutes);
 
-// ✅ Reports Route
-app.use("/api/reports", reportRoutes);
+app.use(
+    "/api/customers",
+    customerRoutes
+);
 
-app.use("/api/settings", settingsRoutes);
+
+app.use(
+    "/api/bills",
+    billRoutes
+);
+
+
+app.use(
+    "/api/transactions",
+    transactionRoutes
+);
+
+
+app.use(
+    "/api/reports",
+    reportRoutes
+);
+
+
+app.use(
+    "/api/dashboard",
+    dashboardRoutes
+);
+
+
 
 // =====================
 // Test Route
 // =====================
 
-app.get("/", (req, res) => {
 
-    res.json({
+app.get(
+    "/",
+    (req,res)=>{
 
-        message: "Shetkari Agro API Running"
+        res.json({
 
-    });
+            message:
+            "Shetkari Agro API Running"
 
-});
+        });
 
-// =====================
-// Error Handler
-// =====================
+    }
+);
 
-app.use((err, req, res, next) => {
 
-    console.error(err);
-
-    res.status(500).json({
-
-        message: "Server Error",
-
-        error: err.message
-
-    });
-
-});
 
 // =====================
-// Server Start
+// MongoDB Connection
 // =====================
 
-const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+const PORT =
+process.env.PORT || 5000;
 
-    console.log(`Server running on port ${PORT}`);
+
+
+mongoose.connect(
+
+    process.env.MONGO_URI
+
+)
+
+.then(()=>{
+
+
+    console.log(
+        "MongoDB Connected"
+    );
+
+
+    app.listen(
+
+        PORT,
+
+        ()=>{
+
+            console.log(
+                `Server running on port ${PORT}`
+            );
+
+        }
+
+    );
+
+
+})
+
+
+.catch(error=>{
+
+
+    console.log(
+        "MongoDB Error:",
+        error
+    );
+
 
 });

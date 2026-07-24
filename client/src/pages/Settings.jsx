@@ -1,38 +1,50 @@
-import {useEffect,useState} from "react";
-import {toast} from "react-toastify";
+import React, { useEffect, useState } from "react";
 
 import {
+  Store,
+  Lock,
+  Languages,
+  Database,
+  Package,
+  Users,
+  Receipt,
+  Save
+} from "lucide-react";
 
-getSettings,
-updateSettings
+import { useTranslation } from "react-i18next";
 
-}
-
-from "../services/settingsService";
+import { getReports } from "../services/reportService";
 
 
 
-export default function Settings(){
+const Settings = () => {
 
 
-const [form,setForm]=useState({
+const { t, i18n } = useTranslation();
 
-shopName:"",
-ownerName:"",
-phone:"",
-email:"",
-address:""
+
+
+const [stats,setStats]=useState({
+
+products:0,
+customers:0,
+bills:0
 
 });
 
 
 
+const [language,setLanguage]=useState(
+
+localStorage.getItem("language") || "en"
+
+);
+
+
 
 useEffect(()=>{
 
-
-loadSettings();
-
+loadStats();
 
 },[]);
 
@@ -40,107 +52,306 @@ loadSettings();
 
 
 
-
-const loadSettings=async()=>{
-
+const loadStats=async()=>{
 
 try{
 
-
-const data = await getSettings();
-
-
-setForm(data);
+const data=await getReports();
 
 
+setStats({
 
-}
+products:data.totalProducts || 0,
 
-catch(error){
+customers:data.totalCustomers || 0,
 
-
-console.log(error);
-
-
-toast.error(
-
-"Failed to load settings"
-
-);
-
-
-}
-
-
-};
-
-
-
-
-
-
-const handleChange=(e)=>{
-
-
-setForm({
-
-...form,
-
-[e.target.name]:
-
-e.target.value
-
+bills:data.totalBills || 0
 
 });
 
 
-};
-
-
-
-
-
-
-const handleSubmit=async(e)=>{
-
-
-e.preventDefault();
-
-
-
-try{
-
-
-await updateSettings(form);
-
-
-
-toast.success(
-
-"Settings Updated Successfully"
-
-);
-
-
-
 }
 
 catch(error){
 
-
 console.log(error);
-
-
-toast.error(
-
-"Update Failed"
-
-);
-
 
 }
 
+};
 
+
+
+
+
+const changeLanguage=(e)=>{
+
+
+const lang=e.target.value;
+
+
+setLanguage(lang);
+
+
+i18n.changeLanguage(lang);
+
+
+localStorage.setItem(
+"language",
+lang
+);
+
+
+};
+
+
+
+
+
+return (
+
+<div className="min-h-screen bg-gray-50 p-6">
+
+
+<div className="bg-white rounded-xl shadow p-5 mb-6">
+
+
+<h1 className="text-3xl font-bold text-green-700">
+
+🌾 {t("shopName")}
+
+</h1>
+
+
+<p className="text-gray-600">
+
+{t("settings")}
+
+</p>
+
+
+</div>
+
+
+
+
+
+<div className="grid md:grid-cols-3 gap-5 mb-6">
+
+
+<StatCard
+
+title={t("products")}
+
+value={stats.products}
+
+icon={<Package/>}
+
+/>
+
+
+
+<StatCard
+
+title={t("customers")}
+
+value={stats.customers}
+
+icon={<Users/>}
+
+/>
+
+
+
+<StatCard
+
+title={t("bills")}
+
+value={stats.bills}
+
+icon={<Receipt/>}
+
+/>
+
+
+
+</div>
+
+
+
+
+
+
+<div className="bg-white rounded-xl shadow p-5 mb-6">
+
+
+<div className="flex gap-3 items-center mb-5">
+
+<Store className="text-green-700"/>
+
+<h2 className="text-xl font-semibold text-green-700">
+
+{t("shopInformation")}
+
+</h2>
+
+</div>
+
+
+
+
+<Input
+
+label={t("shopName")}
+
+value="🌾 शेतकरी अॅग्रो"
+
+disabled
+
+/>
+
+
+
+<Input
+
+label={t("adminName")}
+
+value="रुषिकेश बंड"
+
+disabled
+
+/>
+
+
+
+
+
+<button className="mt-5 bg-green-700 text-white px-5 py-2 rounded-lg flex gap-2">
+
+<Save size={18}/>
+
+{t("save")}
+
+</button>
+
+
+</div>
+
+
+
+
+
+
+
+
+<div className="bg-white rounded-xl shadow p-5">
+
+
+<div className="flex items-center gap-3 mb-5">
+
+
+<Languages className="text-green-700"/>
+
+
+<h2 className="text-xl font-semibold text-green-700">
+
+{t("applicationSettings")}
+
+</h2>
+
+
+</div>
+
+
+
+
+
+<div className="flex justify-between items-center border rounded-lg p-4">
+
+
+<div>
+
+<p className="font-medium">
+
+{t("language")}
+
+</p>
+
+
+<p className="text-gray-500 text-sm">
+
+{t("chooseLanguage")}
+
+</p>
+
+
+</div>
+
+
+
+
+<select
+
+value={language}
+
+onChange={changeLanguage}
+
+className="border rounded-lg px-3 py-2"
+
+>
+
+
+<option value="en">
+
+English
+
+</option>
+
+
+<option value="hi">
+
+हिंदी
+
+</option>
+
+
+<option value="mr">
+
+मराठी
+
+</option>
+
+
+
+</select>
+
+
+</div>
+
+
+
+
+
+<div className="mt-5 flex gap-3 text-gray-600">
+
+<Database/>
+
+{t("databaseConnected")}
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+</div>
+
+
+);
 
 };
 
@@ -150,203 +361,84 @@ toast.error(
 
 
 
-return(
+const Input=({
+
+label,
+
+value,
+
+disabled
+
+})=>(
 
 
-<div className="space-y-8">
+<div className="mb-4">
 
 
-<h1 className="text-3xl font-bold text-green-700">
+<label className="block text-sm mb-1">
 
-⚙️ Shop Settings
-
-</h1>
-
-
-
-
-
-<div className="bg-white shadow-lg rounded-xl p-8 max-w-3xl">
-
-
-
-<form
-
-onSubmit={handleSubmit}
-
-className="space-y-5"
-
->
-
-
-
-<div>
-
-<label className="font-semibold">
-
-Shop Name
+{label}
 
 </label>
 
 
 <input
 
-name="shopName"
+value={value}
 
-value={form.shopName}
+disabled={disabled}
 
-onChange={handleChange}
-
-className="w-full border p-3 rounded-lg mt-2"
+className="w-full border rounded-lg p-2 bg-gray-100"
 
 />
+
 
 </div>
 
 
+);
 
 
 
+
+
+
+const StatCard=({
+
+title,
+
+value,
+
+icon
+
+})=>(
+
+
+<div className="bg-white shadow rounded-xl p-5 flex justify-between">
 
 
 <div>
 
-<label className="font-semibold">
+<p className="text-gray-500">
 
-Owner Name
+{title}
 
-</label>
+</p>
 
 
-<input
+<h2 className="text-2xl font-bold text-green-700">
 
-name="ownerName"
+{value}
 
-value={form.ownerName}
+</h2>
 
-onChange={handleChange}
-
-className="w-full border p-3 rounded-lg mt-2"
-
-/>
 
 </div>
 
 
+<div className="text-green-700">
 
-
-
-
-
-<div>
-
-<label className="font-semibold">
-
-Phone
-
-</label>
-
-
-<input
-
-name="phone"
-
-value={form.phone}
-
-onChange={handleChange}
-
-className="w-full border p-3 rounded-lg mt-2"
-
-/>
-
-</div>
-
-
-
-
-
-
-
-<div>
-
-<label className="font-semibold">
-
-Email
-
-</label>
-
-
-<input
-
-name="email"
-
-value={form.email}
-
-onChange={handleChange}
-
-className="w-full border p-3 rounded-lg mt-2"
-
-/>
-
-</div>
-
-
-
-
-
-
-
-
-<div>
-
-<label className="font-semibold">
-
-Address
-
-</label>
-
-
-<textarea
-
-name="address"
-
-value={form.address}
-
-onChange={handleChange}
-
-rows="4"
-
-className="w-full border p-3 rounded-lg mt-2"
-
-/>
-
-</div>
-
-
-
-
-
-
-
-<button
-
-type="submit"
-
-className="bg-green-700 hover:bg-green-800 text-white px-8 py-3 rounded-lg"
-
->
-
-
-Save Settings
-
-
-</button>
-
-
-
-
-</form>
-
+{icon}
 
 </div>
 
@@ -357,4 +449,5 @@ Save Settings
 );
 
 
-}
+
+export default Settings;

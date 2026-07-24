@@ -1,174 +1,391 @@
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
+
 export const generateInvoice = (bill) => {
+
 
     const doc = new jsPDF();
 
-    // ===========================
-    // SHOP HEADER
-    // ===========================
 
-    doc.setFillColor(34, 139, 34);
-    doc.rect(0, 0, 210, 35, "F");
 
-    doc.setTextColor(255,255,255);
+    // =========================
+    // HEADER
+    // =========================
 
-    doc.setFontSize(22);
-    doc.text("🌾 शेतकरी अॅग्रो",14,16);
 
-    doc.setFontSize(11);
-    doc.text("Agricultural Products & Services",14,24);
+    doc.setFillColor(
+        46,
+        125,
+        50
+    );
 
-    doc.text("Nagpur, Maharashtra",14,30);
+
+    doc.rect(
+        0,
+        0,
+        210,
+        45,
+        "F"
+    );
+
+
+
+    doc.setTextColor(
+        255,
+        255,
+        255
+    );
+
+
 
     doc.setFontSize(20);
-    doc.text("INVOICE",155,20);
 
-    doc.setTextColor(0,0,0);
 
-    // ===========================
-    // BILL INFO
-    // ===========================
+    doc.text(
+        "SHETKARI AGRO",
+        14,
+        15
+    );
+
+
 
     doc.setFontSize(11);
 
-    doc.text(`Invoice No : ${bill._id}`,14,48);
 
     doc.text(
-        `Date : ${
-            new Date(bill.createdAt || Date.now()).toLocaleDateString()
+        "Agricultural Products Store",
+        14,
+        23
+    );
+
+
+
+    doc.text(
+        "Maratha Complex, Near HDFC Bank",
+        14,
+        31
+    );
+
+
+
+    doc.text(
+        "Bhaktidam Road, Chandur Bazaar, Amravati",
+        14,
+        38
+    );
+
+
+
+    doc.setTextColor(
+        0,
+        0,
+        0
+    );
+
+
+
+
+
+    // =========================
+    // INVOICE DETAILS
+    // =========================
+
+
+    const invoiceNo =
+    `INV-${new Date().getFullYear()}-${String(Date.now()).slice(-6)}`;
+
+
+
+    doc.setFontSize(11);
+
+
+
+    doc.text(
+        `Invoice No: ${invoiceNo}`,
+        14,
+        58
+    );
+
+
+
+    doc.text(
+        `Date: ${
+            new Date(
+                bill.createdAt || Date.now()
+            ).toLocaleDateString()
         }`,
         140,
-        48
+        58
     );
 
-    // ===========================
-    // CUSTOMER
-    // ===========================
 
-    doc.setFillColor(240,248,240);
-    doc.rect(14,55,182,24,"F");
 
-    doc.setFontSize(12);
-    doc.text("Customer Details",16,63);
 
-    doc.setFontSize(10);
+
+
+    // =========================
+    // CUSTOMER DETAILS
+    // =========================
+
+
+    doc.setFontSize(14);
+
 
     doc.text(
-        `Name : ${bill.customer?.name || "-"}`,
-        16,
-        70
+        "Customer Details",
+        14,
+        75
     );
+
+
+
+    doc.setFontSize(11);
+
+
 
     doc.text(
-        `Phone : ${bill.customer?.phone || "-"}`,
-        110,
-        70
+        `Name: ${bill.customer?.name || "-"}`,
+        14,
+        84
     );
+
+
 
     doc.text(
-        `Address : ${bill.customer?.address || "-"}`,
-        16,
-        76
+        `Phone: ${bill.customer?.phone || "-"}`,
+        14,
+        91
     );
 
-    // ===========================
-    // PRODUCTS TABLE
-    // ===========================
 
-    const rows = bill.items.map(item => [
+
+    doc.text(
+        `Address: ${bill.customer?.address || "-"}`,
+        14,
+        98
+    );
+
+
+
+
+
+
+
+    // =========================
+    // PRODUCT TABLE
+    // =========================
+
+
+    const rows =
+    bill.items.map(item => [
+
 
         item.productName,
 
+
         item.quantity,
 
-        `₹${item.price}`,
+
+        `Rs ${item.price}`,
+
 
         `${item.gst}%`,
 
-        `₹${item.total}`
+
+        `Rs ${item.total}`
+
 
     ]);
 
-    autoTable(doc,{
 
-        startY:88,
 
-        head:[[
-            "Product",
-            "Qty",
-            "Price",
-            "GST",
-            "Total"
-        ]],
+
+
+    autoTable(doc, {
+
+
+        startY:110,
+
+
+        head:[
+
+            [
+                "Product",
+                "Qty",
+                "Price",
+                "GST",
+                "Total"
+            ]
+
+        ],
+
+
 
         body:rows,
 
+
+
         theme:"grid",
 
+
+
         headStyles:{
-            fillColor:[34,139,34]
+
+            fillColor:[
+                46,
+                125,
+                50
+            ]
+
         }
+
 
     });
 
-    const finalY = doc.lastAutoTable.finalY + 10;
 
-    // ===========================
+
+
+
+
+    const finalY =
+    doc.lastAutoTable.finalY + 15;
+
+
+
+
+
+
+    // =========================
     // TOTALS
-    // ===========================
+    // =========================
+
 
     doc.setFontSize(12);
 
+
+
     doc.text(
-        `Subtotal : ₹${bill.subTotal}`,
+        `Subtotal : Rs ${bill.subTotal}`,
         130,
         finalY
     );
 
+
+
     doc.text(
-        `GST : ₹${bill.gstAmount}`,
+        `GST : Rs ${bill.gstAmount}`,
         130,
-        finalY+8
+        finalY + 8
     );
+
+
 
     doc.setFontSize(15);
 
-    doc.setTextColor(34,139,34);
+
+
+    doc.setTextColor(
+        46,
+        125,
+        50
+    );
+
+
 
     doc.text(
-        `Grand Total : ₹${bill.grandTotal}`,
+        `Grand Total : Rs ${bill.grandTotal}`,
         130,
-        finalY+20
+        finalY + 20
     );
 
-    doc.setTextColor(0,0,0);
 
-    // ===========================
+
+    doc.setTextColor(
+        0,
+        0,
+        0
+    );
+
+
+
+
+
+
+
+    // =========================
     // FOOTER
-    // ===========================
+    // =========================
 
-    doc.line(
-        14,
-        finalY+32,
-        196,
-        finalY+32
-    );
 
     doc.setFontSize(11);
 
-    doc.text(
-        "Thank you for shopping with शेतकरी अॅग्रो!",
-        14,
-        finalY+42
-    );
+
 
     doc.text(
-        "Visit Again 🌾",
+        "Thank you for shopping with Shetkari Agro",
         14,
-        finalY+49
+        finalY + 45
     );
 
-    doc.save(`Invoice-${bill._id}.pdf`);
+
+
+    doc.text(
+        "Visit Again",
+        14,
+        finalY + 52
+    );
+
+
+
+
+
+
+
+    // =========================
+    // SIGNATURE SECTION
+    // =========================
+
+
+    doc.line(
+        140,
+        finalY + 75,
+        195,
+        finalY + 75
+    );
+
+
+
+    doc.setFontSize(11);
+
+
+
+    doc.text(
+        "Authorized Signature",
+        145,
+        finalY + 83
+    );
+
+
+
+    doc.text(
+        "Shetkari Agro",
+        155,
+        finalY + 90
+    );
+
+
+
+
+
+    // =========================
+    // SAVE PDF
+    // =========================
+
+
+    doc.save(
+        `${invoiceNo}.pdf`
+    );
+
+
 };

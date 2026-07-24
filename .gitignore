@@ -1,16 +1,22 @@
-# Node modules
-client/node_modules/
-server/node_modules/
+# Dependencies
+**/node_modules/
 
-# Environment variables
-server/.env
+# Environment files
+**/.env
+
+# Build files
+client/dist/
 
 # Uploads
-server/uploads/imports/
+server/uploads/
 
 # Logs
 *.log
 
-# OS files
+# Editor
+.vscode/
+.idea/
+
+# OS
 .DS_Store
 Thumbs.db

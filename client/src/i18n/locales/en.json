@@ -1,0 +1,14 @@
+{
+  "shopName": "Shetkari Agro",
+  "settings": "System Settings & Configuration",
+  "products": "Products",
+  "customers": "Customers",
+  "bills": "Bills",
+  "shopInformation": "Shop Information",
+  "adminName": "Admin Name",
+  "save": "Save Changes",
+  "applicationSettings": "Application Settings",
+  "language": "Language",
+  "chooseLanguage": "Choose application language",
+  "databaseConnected": "Database Connected"
+}
