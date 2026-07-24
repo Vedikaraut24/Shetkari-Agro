@@ -6,10 +6,6 @@ import helmet from "helmet";
 import morgan from "morgan";
 
 
-// =====================
-// Routes
-// =====================
-
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
@@ -21,12 +17,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 
 
-// =====================
-// Environment
-// =====================
-
 dotenv.config();
-
 
 
 const app = express();
@@ -34,61 +25,12 @@ const app = express();
 
 
 // =====================
-// CORS Configuration
+// CORS FIX
 // =====================
 
-
 app.use(
-
     cors({
-
-        origin: function(origin, callback){
-
-
-            // Allow mobile apps, Postman, server requests
-            if(!origin){
-
-                return callback(null,true);
-
-            }
-
-
-
-            // Allow all Vercel deployments
-
-            if(
-                origin.includes("vercel.app")
-            ){
-
-                return callback(null,true);
-
-            }
-
-
-
-            // Allow localhost development
-
-            if(
-                origin.includes("localhost")
-            ){
-
-                return callback(null,true);
-
-            }
-
-
-
-            callback(
-                new Error("CORS blocked")
-            );
-
-
-        },
-
-
-        credentials:true,
-
-
+        origin:"*",
         methods:[
             "GET",
             "POST",
@@ -97,47 +39,25 @@ app.use(
             "DELETE",
             "OPTIONS"
         ],
-
-
         allowedHeaders:[
-
             "Content-Type",
             "Authorization"
-
         ]
-
     })
-
 );
 
-
-
-// Handle preflight
-
-app.options(
-    "/{*any}",
-    cors()
-);
-
-
-
-
-
-// =====================
-// Middleware
-// =====================
 
 
 app.use(
-    helmet()
+    helmet({
+        crossOriginResourcePolicy:false
+    })
 );
-
 
 
 app.use(
     morgan("dev")
 );
-
 
 
 app.use(
@@ -146,191 +66,82 @@ app.use(
 
 
 
-
-
 // =====================
-// API Routes
+// Routes
 // =====================
 
 
-app.use(
-    "/api/auth",
-    authRoutes
-);
+app.use("/api/auth", authRoutes);
 
+app.use("/api/products", productRoutes);
 
+app.use("/api/categories", categoryRoutes);
 
-app.use(
-    "/api/products",
-    productRoutes
-);
+app.use("/api/customers", customerRoutes);
 
+app.use("/api/bills", billRoutes);
 
+app.use("/api/transactions", transactionRoutes);
 
-app.use(
-    "/api/categories",
-    categoryRoutes
-);
+app.use("/api/reports", reportRoutes);
 
-
-
-app.use(
-    "/api/customers",
-    customerRoutes
-);
-
-
-
-app.use(
-    "/api/bills",
-    billRoutes
-);
-
-
-
-app.use(
-    "/api/transactions",
-    transactionRoutes
-);
-
-
-
-app.use(
-    "/api/reports",
-    reportRoutes
-);
-
-
-
-app.use(
-    "/api/dashboard",
-    dashboardRoutes
-);
-
-
+app.use("/api/dashboard", dashboardRoutes);
 
 
 
 
 // =====================
-// Health Check
+// Test
 // =====================
 
+app.get("/",(req,res)=>{
 
-app.get(
-    "/",
-    (req,res)=>{
+    res.json({
 
+        status:"success",
 
-        res.status(200).json({
+        message:"Shetkari Agro API Working"
 
-            success:true,
+    });
 
-            message:
-            "Shetkari Agro API Running Successfully"
-
-
-        });
-
-
-    }
-);
-
-
+});
 
 
 
 
 // =====================
-// Global Error Handler
+// Server
 // =====================
 
 
-app.use(
-
-    (err,req,res,next)=>{
-
-
-        console.log(err);
-
-
-        res.status(500).json({
-
-            success:false,
-
-            message:
-            "Internal Server Error"
-
-
-        });
-
-
-    }
-
-);
+const PORT = process.env.PORT || 5000;
 
 
 
-
-
-
-
-// =====================
-// MongoDB Connection
-// =====================
-
-
-const PORT =
-process.env.PORT || 5000;
-
-
-
-
-mongoose
-.connect(
-    process.env.MONGO_URI
-)
-
+mongoose.connect(process.env.MONGO_URI)
 
 .then(()=>{
 
 
-    console.log(
-        "MongoDB Connected"
-    );
+    console.log("MongoDB Connected");
 
 
-    app.listen(
+    app.listen(PORT,()=>{
 
-        PORT,
+        console.log(
+            `Server running on port ${PORT}`
+        );
 
-        ()=>{
-
-
-            console.log(
-
-                `Server running on port ${PORT}`
-
-            );
-
-
-        }
-
-    );
+    });
 
 
 })
 
-
-.catch((error)=>{
-
+.catch((err)=>{
 
     console.log(
-
-        "MongoDB Error:",
-        error
-
+        "MongoDB Error",
+        err
     );
-
 
 });
