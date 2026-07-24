@@ -20,31 +20,74 @@ import reportRoutes from "./routes/reportRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 
+
 // =====================
-// Config
+// Environment
 // =====================
 
 dotenv.config();
 
 
+
 const app = express();
+
 
 
 // =====================
 // CORS Configuration
 // =====================
 
+
 app.use(
+
     cors({
 
-        origin: [
-            "http://localhost:5173",
-            "https://shetkari-agro.vercel.app",
-            "https://shetkari-agro-5vhb-lqo00nje4-vedika9.vercel.app",
-            "https://shetkari-agro-5vhb-jw6j8w84g-vedika9.vercel.app"
-        ],
+        origin: function(origin, callback){
+
+
+            // Allow mobile apps, Postman, server requests
+            if(!origin){
+
+                return callback(null,true);
+
+            }
+
+
+
+            // Allow all Vercel deployments
+
+            if(
+                origin.includes("vercel.app")
+            ){
+
+                return callback(null,true);
+
+            }
+
+
+
+            // Allow localhost development
+
+            if(
+                origin.includes("localhost")
+            ){
+
+                return callback(null,true);
+
+            }
+
+
+
+            callback(
+                new Error("CORS blocked")
+            );
+
+
+        },
+
 
         credentials:true,
+
 
         methods:[
             "GET",
@@ -55,20 +98,28 @@ app.use(
             "OPTIONS"
         ],
 
+
         allowedHeaders:[
+
             "Content-Type",
             "Authorization"
+
         ]
 
     })
+
 );
 
 
-// Handle preflight requests
+
+// Handle preflight
+
 app.options(
     "/{*any}",
     cors()
 );
+
+
 
 
 
@@ -82,9 +133,11 @@ app.use(
 );
 
 
+
 app.use(
     morgan("dev")
 );
+
 
 
 app.use(
@@ -93,8 +146,10 @@ app.use(
 
 
 
+
+
 // =====================
-// Routes
+// API Routes
 // =====================
 
 
@@ -104,10 +159,12 @@ app.use(
 );
 
 
+
 app.use(
     "/api/products",
     productRoutes
 );
+
 
 
 app.use(
@@ -116,10 +173,12 @@ app.use(
 );
 
 
+
 app.use(
     "/api/customers",
     customerRoutes
 );
+
 
 
 app.use(
@@ -128,16 +187,19 @@ app.use(
 );
 
 
+
 app.use(
     "/api/transactions",
     transactionRoutes
 );
 
 
+
 app.use(
     "/api/reports",
     reportRoutes
 );
+
 
 
 app.use(
@@ -147,8 +209,11 @@ app.use(
 
 
 
+
+
+
 // =====================
-// Test API
+// Health Check
 // =====================
 
 
@@ -156,45 +221,62 @@ app.get(
     "/",
     (req,res)=>{
 
-        res.json({
+
+        res.status(200).json({
 
             success:true,
 
             message:
             "Shetkari Agro API Running Successfully"
 
+
         });
+
 
     }
 );
 
 
 
+
+
+
 // =====================
-// Error Handler
+// Global Error Handler
 // =====================
 
 
 app.use(
+
     (err,req,res,next)=>{
 
+
         console.log(err);
+
 
         res.status(500).json({
 
             success:false,
 
-            message:"Server Error"
+            message:
+            "Internal Server Error"
+
 
         });
 
+
     }
+
 );
 
 
 
+
+
+
+
 // =====================
-// Database
+// MongoDB Connection
 // =====================
 
 
@@ -203,8 +285,12 @@ process.env.PORT || 5000;
 
 
 
+
 mongoose
-.connect(process.env.MONGO_URI)
+.connect(
+    process.env.MONGO_URI
+)
+
 
 .then(()=>{
 
@@ -215,25 +301,35 @@ mongoose
 
 
     app.listen(
+
         PORT,
+
         ()=>{
 
+
             console.log(
+
                 `Server running on port ${PORT}`
+
             );
 
+
         }
+
     );
 
 
 })
 
+
 .catch((error)=>{
 
 
     console.log(
+
         "MongoDB Error:",
         error
+
     );
 
 
