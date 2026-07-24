@@ -20,9 +20,8 @@ import reportRoutes from "./routes/reportRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 
-
 // =====================
-// Environment
+// Config
 // =====================
 
 dotenv.config();
@@ -31,47 +30,52 @@ dotenv.config();
 const app = express();
 
 
-
 // =====================
-// CORS
+// CORS Configuration
 // =====================
 
 app.use(
-
     cors({
 
-        origin:true,
+        origin: [
+            "http://localhost:5173",
+            "https://shetkari-agro.vercel.app",
+            "https://shetkari-agro-5vhb-lqo00nje4-vedika9.vercel.app",
+            "https://shetkari-agro-5vhb-jw6j8w84g-vedika9.vercel.app"
+        ],
 
         credentials:true,
 
         methods:[
-
             "GET",
             "POST",
             "PUT",
             "PATCH",
             "DELETE",
             "OPTIONS"
-
         ],
 
         allowedHeaders:[
-
             "Content-Type",
             "Authorization"
-
         ]
 
     })
-
 );
 
+
+// Handle preflight requests
+app.options(
+    "/{*any}",
+    cors()
+);
 
 
 
 // =====================
 // Middleware
 // =====================
+
 
 app.use(
     helmet()
@@ -86,7 +90,6 @@ app.use(
 app.use(
     express.json()
 );
-
 
 
 
@@ -144,20 +147,16 @@ app.use(
 
 
 
-
-
 // =====================
-// Test Route
+// Test API
 // =====================
+
 
 app.get(
-
     "/",
-
     (req,res)=>{
 
-
-        res.status(200).json({
+        res.json({
 
             success:true,
 
@@ -166,12 +165,8 @@ app.get(
 
         });
 
-
     }
-
 );
-
-
 
 
 
@@ -181,37 +176,25 @@ app.get(
 
 
 app.use(
-
     (err,req,res,next)=>{
 
-
-        console.log(
-            err.message
-        );
-
+        console.log(err);
 
         res.status(500).json({
 
             success:false,
 
-            message:
-            err.message
+            message:"Server Error"
 
         });
 
-
     }
-
 );
 
 
 
-
-
-
-
 // =====================
-// MongoDB Connection
+// Database
 // =====================
 
 
@@ -220,11 +203,8 @@ process.env.PORT || 5000;
 
 
 
-mongoose.connect(
-
-    process.env.MONGO_URI
-
-)
+mongoose
+.connect(process.env.MONGO_URI)
 
 .then(()=>{
 
@@ -235,35 +215,25 @@ mongoose.connect(
 
 
     app.listen(
-
         PORT,
-
         ()=>{
 
-
             console.log(
-
                 `Server running on port ${PORT}`
-
             );
 
-
         }
-
     );
 
 
 })
 
-
 .catch((error)=>{
 
 
     console.log(
-
         "MongoDB Error:",
-        error.message
-
+        error
     );
 
 
