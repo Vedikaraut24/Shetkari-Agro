@@ -4,13 +4,21 @@ import axios from "axios";
 const API = axios.create({
 
     baseURL:
-    "https://shetkari-agro.onrender.com/api"
+    "https://shetkari-agro.onrender.com/api",
+
+    withCredentials:true,
+
+    headers:{
+        "Content-Type":"application/json"
+    }
 
 });
 
 
 
-API.interceptors.request.use((config)=>{
+API.interceptors.request.use(
+
+(config)=>{
 
 
     const token =
@@ -28,7 +36,15 @@ API.interceptors.request.use((config)=>{
     return config;
 
 
-});
+},
+
+(error)=>{
+
+    return Promise.reject(error);
+
+}
+
+);
 
 
 
