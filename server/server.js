@@ -22,7 +22,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 
 // =====================
-// Config
+// Environment
 // =====================
 
 dotenv.config();
@@ -33,75 +33,16 @@ const app = express();
 
 
 // =====================
-// CORS Configuration
+// CORS
 // =====================
-
-
-const allowedOrigins = [
-
-    "http://localhost:5173",
-
-    "https://shetkari-agro.vercel.app"
-
-];
-
-
 
 app.use(
 
     cors({
 
-        origin:(origin,callback)=>{
-
-
-            // Allow tools like Postman
-
-            if(!origin){
-
-                return callback(null,true);
-
-            }
-
-
-
-            // Allow all Vercel deployments
-
-            if(
-                origin.endsWith(".vercel.app")
-            ){
-
-                return callback(null,true);
-
-            }
-
-
-
-            // Allow listed domains
-
-            if(
-                allowedOrigins.includes(origin)
-            ){
-
-                return callback(null,true);
-
-            }
-
-
-
-            return callback(
-
-                new Error(
-                    "CORS blocked this origin"
-                )
-
-            );
-
-
-        },
-
+        origin:true,
 
         credentials:true,
-
 
         methods:[
 
@@ -113,7 +54,6 @@ app.use(
             "OPTIONS"
 
         ],
-
 
         allowedHeaders:[
 
@@ -129,12 +69,9 @@ app.use(
 
 
 
-
-
 // =====================
 // Middleware
 // =====================
-
 
 app.use(
     helmet()
@@ -153,10 +90,8 @@ app.use(
 
 
 
-
-
 // =====================
-// API Routes
+// Routes
 // =====================
 
 
@@ -166,12 +101,10 @@ app.use(
 );
 
 
-
 app.use(
     "/api/products",
     productRoutes
 );
-
 
 
 app.use(
@@ -180,12 +113,10 @@ app.use(
 );
 
 
-
 app.use(
     "/api/customers",
     customerRoutes
 );
-
 
 
 app.use(
@@ -194,19 +125,16 @@ app.use(
 );
 
 
-
 app.use(
     "/api/transactions",
     transactionRoutes
 );
 
 
-
 app.use(
     "/api/reports",
     reportRoutes
 );
-
 
 
 app.use(
@@ -218,11 +146,9 @@ app.use(
 
 
 
-
 // =====================
-// Health Check
+// Test Route
 // =====================
-
 
 app.get(
 
@@ -249,8 +175,6 @@ app.get(
 
 
 
-
-
 // =====================
 // Error Handler
 // =====================
@@ -262,7 +186,6 @@ app.use(
 
 
         console.log(
-            "Server Error:",
             err.message
         );
 
@@ -280,7 +203,6 @@ app.use(
     }
 
 );
-
 
 
 
@@ -310,7 +232,6 @@ mongoose.connect(
     console.log(
         "MongoDB Connected"
     );
-
 
 
     app.listen(
