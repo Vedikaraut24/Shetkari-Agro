@@ -1,10 +1,13 @@
 # Dependencies
+node_modules/
 **/node_modules/
 
-# Environment files
+# Environment
+.env
 **/.env
 
-# Build files
+# Build
+dist/
 client/dist/
 
 # Uploads
