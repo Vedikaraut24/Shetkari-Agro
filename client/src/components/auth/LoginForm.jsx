@@ -1,7 +1,8 @@
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+
+import API from "../../services/api";
 
 
 export default function LoginForm(){
@@ -18,12 +19,11 @@ export default function LoginForm(){
 
     const onSubmit = async(data)=>{
 
-
         try{
 
 
-            const response = await axios.post(
-                "http://localhost:5000/api/auth/login",
+            const response = await API.post(
+                "/auth/login",
                 {
                     username:data.username,
                     password:data.password
