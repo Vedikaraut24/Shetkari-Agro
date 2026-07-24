@@ -2,55 +2,61 @@ export default function RecentBills({ bills = [] }) {
 
     return (
 
-        <div className="bg-white rounded-2xl shadow p-5">
+        <div className="bg-white rounded-2xl shadow-lg p-5">
 
-            <h2 className="text-xl font-bold mb-5">
+            <h2 className="text-xl font-bold text-green-700 mb-5">
 
                 🧾 Recent Bills
 
             </h2>
 
-            <table className="w-full">
+            <div className="overflow-x-auto">
 
-                <thead>
+                <table className="w-full">
 
-                    <tr className="border-b">
+                    <thead>
 
-                        <th className="text-left py-3">
+                        <tr className="border-b bg-green-50">
 
-                            Bill No
+                            <th className="text-left py-3 px-2">
 
-                        </th>
+                                Bill ID
 
-                        <th>
+                            </th>
 
-                            Customer
+                            <th className="text-left px-2">
 
-                        </th>
+                                Customer
 
-                        <th>
+                            </th>
 
-                            Amount
+                            <th className="text-right px-2">
 
-                        </th>
+                                Amount
 
-                    </tr>
+                            </th>
 
-                </thead>
+                            <th className="text-center px-2">
 
-                <tbody>
+                                Date
 
-                    {
+                            </th>
 
-                        bills.length === 0 ?
+                        </tr>
 
-                            (
+                    </thead>
+
+                    <tbody>
+
+                        {
+
+                            bills.length === 0 ? (
 
                                 <tr>
 
                                     <td
 
-                                        colSpan="3"
+                                        colSpan="4"
 
                                         className="text-center py-10 text-gray-500"
 
@@ -62,37 +68,43 @@ export default function RecentBills({ bills = [] }) {
 
                                 </tr>
 
-                            )
+                            ) : (
 
-                            :
-
-                            (
-
-                                bills.map(bill => (
+                                bills.map((bill) => (
 
                                     <tr
 
                                         key={bill._id}
 
-                                        className="border-b"
+                                        className="border-b hover:bg-gray-50"
 
                                     >
 
-                                        <td className="py-3">
+                                        <td className="py-3 px-2 font-medium">
 
-                                            {bill.billNumber}
-
-                                        </td>
-
-                                        <td>
-
-                                            {bill.customerName}
+                                            #{bill._id.slice(-6).toUpperCase()}
 
                                         </td>
 
-                                        <td>
+                                        <td className="px-2">
 
-                                            ₹ {bill.totalAmount}
+                                            {bill.customer?.name || "Walk-in Customer"}
+
+                                        </td>
+
+                                        <td className="text-right px-2 font-semibold text-green-700">
+
+                                            ₹ {Number(bill.grandTotal).toLocaleString()}
+
+                                        </td>
+
+                                        <td className="text-center px-2">
+
+                                            {new Date(
+
+                                                bill.createdAt
+
+                                            ).toLocaleDateString("en-IN")}
 
                                         </td>
 
@@ -102,11 +114,13 @@ export default function RecentBills({ bills = [] }) {
 
                             )
 
-                    }
+                        }
 
-                </tbody>
+                    </tbody>
 
-            </table>
+                </table>
+
+            </div>
 
         </div>
 

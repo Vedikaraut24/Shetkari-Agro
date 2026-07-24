@@ -2,12 +2,15 @@ import express from "express";
 
 
 import {
+
     createProduct,
     getProducts,
     getProductById,
     updateProduct,
     deleteProduct,
-    importProducts
+    importProducts,
+    searchProducts
+
 }
 from "../controllers/productController.js";
 
@@ -23,7 +26,10 @@ console.log("Product routes loaded");
 
 
 
-// CSV IMPORT
+// =====================
+// CSV / EXCEL IMPORT
+// =====================
+
 
 router.post(
 
@@ -48,39 +54,103 @@ router.post(
 
 
 
-// CRUD
+// =====================
+// SEARCH PRODUCT
+// MUST BE ABOVE /:id
+// =====================
+
+
+router.get(
+
+    "/search",
+
+    searchProducts
+
+);
+
+
+
+
+
+// =====================
+// CREATE PRODUCT
+// =====================
+
 
 router.post(
-"/",
-createProduct
+
+    "/",
+
+    createProduct
+
 );
 
+
+
+
+
+// =====================
+// GET ALL PRODUCTS
+// =====================
 
 
 router.get(
-"/",
-getProducts
+
+    "/",
+
+    getProducts
+
 );
 
+
+
+
+
+// =====================
+// GET SINGLE PRODUCT
+// =====================
 
 
 router.get(
-"/:id",
-getProductById
+
+    "/:id",
+
+    getProductById
+
 );
 
+
+
+
+
+// =====================
+// UPDATE PRODUCT
+// =====================
 
 
 router.put(
-"/:id",
-updateProduct
+
+    "/:id",
+
+    updateProduct
+
 );
 
 
 
+
+
+// =====================
+// DELETE PRODUCT
+// =====================
+
+
 router.delete(
-"/:id",
-deleteProduct
+
+    "/:id",
+
+    deleteProduct
+
 );
 
 

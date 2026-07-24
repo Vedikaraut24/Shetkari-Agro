@@ -2,84 +2,33 @@ import Customer from "../models/Customer.js";
 
 
 
-// CREATE CUSTOMER
-
-export const createCustomer = async(req,res)=>{
-
-
-try{
-
-
-const customer =
-await Customer.create(
-req.body
-);
-
-
-
-res.status(201).json({
-
-message:"Customer Added",
-
-customer
-
-});
-
-
-
-}
-catch(error){
-
-
-res.status(500).json({
-
-message:error.message
-
-});
-
-
-}
-
-
-};
-
-
-
-
-
+// =======================
 // GET ALL CUSTOMERS
+// =======================
 
 export const getCustomers = async(req,res)=>{
 
+    try{
 
-try{
-
-
-const customers =
-await Customer.find()
-.sort({
-createdAt:-1
-});
+        const customers = await Customer.find()
+        .sort({
+            createdAt:-1
+        });
 
 
-
-res.json(customers);
-
+        res.json(customers);
 
 
-}
-catch(error){
+    }
+    catch(error){
 
+        res.status(500).json({
 
-res.status(500).json({
+            message:error.message
 
-message:error.message
+        });
 
-});
-
-
-}
-
+    }
 
 };
 
@@ -87,40 +36,32 @@ message:error.message
 
 
 
+// =======================
+// CREATE CUSTOMER
+// =======================
+
+export const createCustomer = async(req,res)=>{
+
+    try{
+
+        const customer = await Customer.create(
+            req.body
+        );
 
 
-// GET SINGLE CUSTOMER
-
-export const getCustomerById = async(req,res)=>{
+        res.status(201).json(customer);
 
 
-try{
+    }
+    catch(error){
 
+        res.status(500).json({
 
-const customer =
-await Customer.findById(
-req.params.id
-);
+            message:error.message
 
+        });
 
-
-res.json(customer);
-
-
-
-}
-catch(error){
-
-
-res.status(500).json({
-
-message:error.message
-
-});
-
-
-}
-
+    }
 
 };
 
@@ -128,49 +69,96 @@ message:error.message
 
 
 
+// =======================
+// SEARCH CUSTOMERS
+// =======================
+
+export const searchCustomers = async(req,res)=>{
+
+    try{
+
+        const keyword = req.query.keyword || "";
+
+
+        const customers = await Customer.find({
+
+            $or:[
+
+                {
+                    name:{
+                        $regex:keyword,
+                        $options:"i"
+                    }
+                },
+
+                {
+                    phone:{
+                        $regex:keyword,
+                        $options:"i"
+                    }
+                }
+
+            ]
+
+        })
+        .limit(10);
 
 
 
+        res.json(customers);
+
+
+    }
+    catch(error){
+
+        res.status(500).json({
+
+            message:error.message
+
+        });
+
+    }
+
+};
+
+
+
+
+
+// =======================
 // UPDATE CUSTOMER
+// =======================
 
 export const updateCustomer = async(req,res)=>{
 
+    try{
 
-try{
+        const customer = await Customer.findByIdAndUpdate(
 
+            req.params.id,
 
-const customer =
-await Customer.findByIdAndUpdate(
+            req.body,
 
-req.params.id,
+            {
+                new:true
+            }
 
-req.body,
-
-{
-new:true
-}
-
-);
+        );
 
 
-
-res.json(customer);
-
+        res.json(customer);
 
 
-}
-catch(error){
+    }
+    catch(error){
 
+        res.status(500).json({
 
-res.status(500).json({
+            message:error.message
 
-message:error.message
+        });
 
-});
-
-
-}
-
+    }
 
 };
 
@@ -178,44 +166,37 @@ message:error.message
 
 
 
-
-
+// =======================
 // DELETE CUSTOMER
+// =======================
 
 export const deleteCustomer = async(req,res)=>{
 
+    try{
 
-try{
+        await Customer.findByIdAndDelete(
 
+            req.params.id
 
-await Customer.findByIdAndDelete(
-
-req.params.id
-
-);
+        );
 
 
+        res.json({
 
-res.json({
+            message:"Customer Deleted"
 
-message:"Customer deleted"
-
-});
-
+        });
 
 
-}
-catch(error){
+    }
+    catch(error){
 
+        res.status(500).json({
 
-res.status(500).json({
+            message:error.message
 
-message:error.message
+        });
 
-});
-
-
-}
-
+    }
 
 };

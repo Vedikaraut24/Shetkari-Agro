@@ -11,6 +11,8 @@ import {
   FaMoneyBillWave
 } from "react-icons/fa";
 
+import { CalendarDays } from "lucide-react";
+
 import { getDashboard } from "../services/dashboardService";
 
 import StatsCard from "../components/dashboard/StatsCard";
@@ -21,153 +23,247 @@ import RecentBills from "../components/dashboard/RecentBills";
 
 export default function Dashboard() {
 
-  const [data, setData] = useState({
+    const [data, setData] = useState({
 
-    totalProducts: 0,
-    totalCustomers: 0,
-    totalBills: 0,
-    lowStock: 0,
-    inventoryValue: 0,
-    totalSales: 0,
-    todaySales: 0,
+        totalProducts: 0,
+        totalCustomers: 0,
+        totalBills: 0,
+        lowStock: 0,
 
-    salesChart: [],
-    categoryChart: [],
-    lowStockProducts: [],
-    recentBills: []
+        inventoryValue: 0,
+        totalSales: 0,
+        todaySales: 0,
 
-  });
+        salesChart: [],
+        categoryChart: [],
+        lowStockProducts: [],
+        recentBills: []
 
-  useEffect(() => {
+    });
 
-    loadDashboard();
+    useEffect(() => {
 
-  }, []);
+        loadDashboard();
 
-  const loadDashboard = async () => {
+    }, []);
 
-    try {
+    const loadDashboard = async () => {
 
-      const dashboard = await getDashboard();
+        try {
 
-      setData({
+            const dashboard = await getDashboard();
 
-        ...dashboard,
+            setData({
 
-        salesChart: dashboard.salesChart || [],
-        categoryChart: dashboard.categoryChart || [],
-        lowStockProducts: dashboard.lowStockProducts || [],
-        recentBills: dashboard.recentBills || []
+                totalProducts: dashboard.totalProducts || 0,
+                totalCustomers: dashboard.totalCustomers || 0,
+                totalBills: dashboard.totalBills || 0,
+                lowStock: dashboard.lowStock || 0,
 
-      });
+                inventoryValue: dashboard.inventoryValue || 0,
+                totalSales: dashboard.totalSales || 0,
+                todaySales: dashboard.todaySales || 0,
 
-    }
+                salesChart: dashboard.salesChart || [],
+                categoryChart: dashboard.categoryChart || [],
+                lowStockProducts: dashboard.lowStockProducts || [],
+                recentBills: dashboard.recentBills || []
 
-    catch (error) {
+            });
 
-      console.log(error);
+        }
 
-      toast.error("Failed to load dashboard");
+        catch (error) {
 
-    }
+            console.log(error);
 
-  };
+            toast.error("Failed to load dashboard");
 
-  return (
+        }
 
-    <div>
+    };
 
-      <h1 className="text-3xl font-bold text-green-700 mb-2">
+    return (
 
-        📊 Dashboard
+        <div className="space-y-8">
 
-      </h1>
+            {/* Header */}
 
-      <p className="text-gray-500 mb-8">
+            <div className="bg-gradient-to-r from-green-700 to-green-600 rounded-2xl p-8 shadow-lg text-white">
 
-        Welcome to Shetkari Agro Inventory Management System
+                <div className="flex justify-between items-center flex-wrap gap-6">
 
-      </p>
+                    <div>
 
-      <div className="grid xl:grid-cols-4 md:grid-cols-2 gap-6 mb-8">
+                        <h1 className="text-4xl font-bold">
 
-        <StatsCard
-          title="Products"
-          value={data.totalProducts}
-          icon={<FaBoxOpen />}
-          color="green"
-        />
+                            🌾 Welcome, Rushikesh Band 👋
 
-        <StatsCard
-          title="Customers"
-          value={data.totalCustomers}
-          icon={<FaUsers />}
-          color="blue"
-        />
+                        </h1>
 
-        <StatsCard
-          title="Bills"
-          value={data.totalBills}
-          icon={<FaShoppingCart />}
-          color="purple"
-        />
+                        <p className="text-green-100 mt-3 text-lg">
 
-        <StatsCard
-          title="Low Stock"
-          value={data.lowStock}
-          icon={<FaExclamationTriangle />}
-          color="red"
-        />
+                            Welcome to <strong>शेतकरी अॅग्रो</strong> Inventory Management Dashboard
 
-        <StatsCard
-          title="Inventory Value"
-          value={`₹ ${data.inventoryValue}`}
-          icon={<FaRupeeSign />}
-          color="yellow"
-        />
+                        </p>
 
-        <StatsCard
-          title="Today's Sales"
-          value={`₹ ${data.todaySales}`}
-          icon={<FaChartLine />}
-          color="green"
-        />
+                    </div>
 
-        <StatsCard
-          title="Total Sales"
-          value={`₹ ${data.totalSales}`}
-          icon={<FaMoneyBillWave />}
-          color="blue"
-        />
+                    <div className="bg-white/20 px-5 py-4 rounded-xl">
 
-      </div>
+                        <div className="flex items-center gap-2">
 
-      <div className="grid xl:grid-cols-2 gap-6 mb-8">
+                            <CalendarDays size={20} />
 
-        <SalesChart
-          data={data.salesChart}
-        />
+                            <span>
 
-        <CategoryPieChart
-          data={data.categoryChart}
-        />
+                                {new Date().toLocaleDateString("en-IN", {
 
-      </div>
+                                    weekday: "long",
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric"
 
-      <div className="grid xl:grid-cols-2 gap-6">
+                                })}
 
-        <LowStockTable
-          products={data.lowStockProducts}
-        />
+                            </span>
 
-        <RecentBills
-          bills={data.recentBills}
-        />
+                        </div>
 
-      </div>
+                    </div>
 
-    </div>
+                </div>
 
-  );
+            </div>
+
+            {/* Statistics */}
+
+            <div className="grid xl:grid-cols-4 md:grid-cols-2 gap-6">
+
+                <StatsCard
+
+                    title="Products"
+
+                    value={data.totalProducts}
+
+                    icon={<FaBoxOpen />}
+
+                    color="green"
+
+                />
+
+                <StatsCard
+
+                    title="Customers"
+
+                    value={data.totalCustomers}
+
+                    icon={<FaUsers />}
+
+                    color="blue"
+
+                />
+
+                <StatsCard
+
+                    title="Bills"
+
+                    value={data.totalBills}
+
+                    icon={<FaShoppingCart />}
+
+                    color="purple"
+
+                />
+
+                <StatsCard
+
+                    title="Low Stock"
+
+                    value={data.lowStock}
+
+                    icon={<FaExclamationTriangle />}
+
+                    color="red"
+
+                />
+
+                <StatsCard
+
+                    title="Inventory Value"
+
+                    value={`₹ ${Number(data.inventoryValue).toLocaleString()}`}
+
+                    icon={<FaRupeeSign />}
+
+                    color="yellow"
+
+                />
+
+                <StatsCard
+
+                    title="Today's Sales"
+
+                    value={`₹ ${Number(data.todaySales).toLocaleString()}`}
+
+                    icon={<FaChartLine />}
+
+                    color="green"
+
+                />
+
+                <StatsCard
+
+                    title="Total Sales"
+
+                    value={`₹ ${Number(data.totalSales).toLocaleString()}`}
+
+                    icon={<FaMoneyBillWave />}
+
+                    color="blue"
+
+                />
+
+            </div>
+
+            {/* Charts */}
+
+            <div className="grid xl:grid-cols-2 gap-6">
+
+                <SalesChart
+
+                    data={data.salesChart}
+
+                />
+
+                <CategoryPieChart
+
+                    data={data.categoryChart}
+
+                />
+
+            </div>
+
+            {/* Tables */}
+
+            <div className="grid xl:grid-cols-2 gap-6">
+
+                <LowStockTable
+
+                    products={data.lowStockProducts}
+
+                />
+
+                <RecentBills
+
+                    bills={data.recentBills}
+
+                />
+
+            </div>
+
+        </div>
+
+    );
 
 }

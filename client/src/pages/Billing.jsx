@@ -1,354 +1,585 @@
-import {
-useEffect,
-useState
-}
-from "react";
+import { useState } from "react";
+import { toast } from "react-toastify";
 
+import CustomerDetails from "../components/billing/CustomerDetails";
+import ProductSearch from "../components/billing/ProductSearch";
+import Invoice from "../components/billing/Invoice";
 
-import {
-toast
-}
-from "react-toastify";
+import { createBill } from "../services/billingService";
 
 
-import {
-getProducts
-}
-from "../services/productService";
 
+export default function Billing() {
 
-import {
-getCustomers
-}
-from "../services/customerService";
 
+    const [customer,setCustomer] = useState({
 
-import {
-createBill
-}
-from "../services/billService";
+        name:"",
+        phone:"",
+        address:""
 
+    });
 
 
 
+    const [items,setItems] = useState([]);
 
-export default function Billing(){
 
 
+    const [generatedBill,setGeneratedBill] = useState(null);
 
-const [customers,setCustomers]=useState([]);
 
-const [products,setProducts]=useState([]);
 
+    const [paymentStatus,setPaymentStatus] = useState("Paid");
 
-const [customer,setCustomer]=useState("");
 
 
-const [cart,setCart]=useState([]);
 
 
 
+    const calculateTotal = () => {
 
 
-useEffect(()=>{
+        let subTotal = 0;
 
 
-loadData();
+        items.forEach(item=>{
 
 
-},[]);
+            subTotal +=
 
+            item.sellingPrice *
 
+            item.quantity;
 
 
 
-const loadData=async()=>{
+        });
 
 
-try{
 
+        return subTotal;
 
-const c =
-await getCustomers();
 
+    };
 
-const p =
-await getProducts();
 
 
 
-setCustomers(c);
 
-setProducts(p);
 
 
+    const handleQuantity = (index,value)=>{
 
-}
-catch(error){
 
-toast.error(
-"Failed loading data"
-);
+        const updated = [...items];
 
-}
 
+        updated[index].quantity = Number(value);
 
-};
 
+        setItems(updated);
 
 
+    };
 
 
 
-const addProduct=(product)=>{
 
 
-const existing =
-cart.find(
-item=>item.product===product._id
-);
 
 
+    const removeProduct=(index)=>{
 
-if(existing){
 
+        const updated = items.filter(
 
-toast.info(
-"Product already added"
-);
+            (_,i)=>i!==index
 
-return;
+        );
 
-}
 
+        setItems(updated);
 
 
-setCart([
+    };
 
-...cart,
 
-{
 
-product:product._id,
 
-productName:
-product.productName,
 
-quantity:1,
 
-price:
-product.sellingPrice,
 
-gst:
-product.gst
 
-}
+    const handleGenerateBill = async()=>{
 
-]);
 
+        try{
 
-};
 
+            if(!customer.name || !customer.phone){
 
 
+                toast.error(
 
+                    "Customer details required"
 
+                );
 
 
-const updateQuantity=(index,value)=>{
+                return;
 
+            }
 
-const updated=[...cart];
 
 
-updated[index].quantity =
-Number(value);
 
+            if(items.length===0){
 
 
-setCart(updated);
+                toast.error(
 
+                    "Select products"
 
-};
+                );
 
 
+                return;
 
+            }
 
 
 
 
-const calculateTotal=()=>{
 
+            const billData = {
 
-let total=0;
 
+                customer,
 
 
-cart.forEach(item=>{
+                items: items.map(item=>({
 
 
-total +=
-item.price *
-item.quantity;
+                    _id:item._id,
 
 
-});
+                    quantity:item.quantity
 
 
+                })),
 
-return total;
 
 
-};
+                paymentStatus
 
 
+            };
 
 
 
 
-const submitBill=async()=>{
 
 
-if(!customer){
+            const response = await createBill(
 
-toast.error(
-"Select customer"
-);
+                billData
 
-return;
+            );
 
-}
 
 
 
-if(cart.length===0){
 
-toast.error(
-"Add products"
-);
+            setGeneratedBill(
 
-return;
+                response.bill
 
-}
+            );
 
 
 
+            toast.success(
 
-try{
+                "Bill Generated Successfully"
 
+            );
 
-const result =
-await createBill({
 
-customer,
 
-items:cart,
+            setItems([]);
 
-paymentStatus:"Paid"
 
-});
 
+        }
 
 
-toast.success(
-"Bill Generated"
-);
 
+        catch(error){
 
 
-setCart([]);
+            console.log(error);
 
 
-}
-catch(error){
 
+            toast.error(
 
-console.log(error);
+                error.response?.data?.message ||
 
+                "Bill Failed"
 
-toast.error(
-"Bill failed"
-);
+            );
 
 
-}
+        }
 
 
+    };
 
-};
 
 
 
 
 
 
+return (
 
-return(
+<div className="space-y-8">
 
-
-<div className="p-6">
 
 
 <h1 className="text-3xl font-bold text-green-700">
 
-🧾 Billing System
+Billing
 
 </h1>
 
 
 
 
-<div className="bg-white shadow rounded-xl p-5 mt-6">
+
+<div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
 
-<h2 className="font-bold mb-3">
 
-Select Customer
+<div>
+
+
+<CustomerDetails
+
+
+customer={customer}
+
+
+setCustomer={setCustomer}
+
+
+/>
+
+
+
+</div>
+
+
+
+
+
+<div>
+
+
+<ProductSearch
+
+
+items={items}
+
+
+setItems={setItems}
+
+
+/>
+
+
+
+</div>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+<div className="bg-white shadow rounded-xl p-6">
+
+
+
+<h2 className="text-2xl font-bold text-green-700 mb-5">
+
+Cart
 
 </h2>
 
 
+
+
+
+<table className="w-full">
+
+
+
+<thead>
+
+
+<tr className="bg-green-700 text-white">
+
+
+<th className="p-3">
+
+Product
+
+</th>
+
+
+<th>
+
+Price
+
+</th>
+
+
+<th>
+
+Qty
+
+</th>
+
+
+<th>
+
+Total
+
+</th>
+
+
+<th>
+
+Action
+
+</th>
+
+
+</tr>
+
+
+</thead>
+
+
+
+
+
+
+<tbody>
+
+
+{
+
+items.map((item,index)=>(
+
+
+<tr
+
+key={item._id}
+
+className="border-b"
+
+
+>
+
+
+
+<td className="p-3">
+
+{item.productName}
+
+</td>
+
+
+
+
+<td>
+
+₹{item.sellingPrice}
+
+</td>
+
+
+
+
+<td>
+
+
+<input
+
+
+type="number"
+
+
+min="1"
+
+
+value={item.quantity}
+
+
+onChange={(e)=>
+
+handleQuantity(
+
+index,
+
+e.target.value
+
+)
+
+}
+
+
+
+className="border p-2 w-20 rounded"
+
+
+
+/>
+
+
+</td>
+
+
+
+
+
+
+<td>
+
+
+₹{
+
+item.sellingPrice *
+
+item.quantity
+
+}
+
+
+
+</td>
+
+
+
+
+
+
+
+<td>
+
+
+<button
+
+
+onClick={()=>removeProduct(index)}
+
+
+
+className="bg-red-600 text-white px-3 py-1 rounded"
+
+
+
+>
+
+
+Remove
+
+
+</button>
+
+
+
+</td>
+
+
+
+
+</tr>
+
+
+
+))
+
+}
+
+
+
+
+</tbody>
+
+
+</table>
+
+
+
+
+
+
+<div className="mt-5">
+
+
+<h3 className="text-xl font-bold">
+
+Subtotal:
+
+₹{calculateTotal()}
+
+</h3>
+
+
+
 <select
 
-className="border p-3 rounded-xl w-full"
 
-value={customer}
+value={paymentStatus}
 
-onChange={
-e=>setCustomer(e.target.value)
+
+onChange={(e)=>
+
+setPaymentStatus(e.target.value)
+
 }
+
+
+
+className="border p-3 rounded mt-3"
+
+
 
 >
 
 
 <option>
 
-Choose Customer
+Paid
 
 </option>
 
 
-{
+<option>
 
-customers.map(c=>(
-
-
-<option
-
-key={c._id}
-
-value={c._id}
-
->
-
-{c.name}
+Pending
 
 </option>
 
-
-))
-
-}
 
 
 </select>
@@ -363,156 +594,23 @@ value={c._id}
 
 
 
-<div className="bg-white shadow rounded-xl p-5 mt-5">
-
-
-<h2 className="font-bold mb-3">
-
-Products
-
-</h2>
-
-
-
-<div className="grid md:grid-cols-3 gap-3">
-
-
-{
-
-products.map(p=>(
-
-
 <button
 
-key={p._id}
 
-onClick={()=>
-addProduct(p)
-}
+onClick={handleGenerateBill}
 
-className="border p-3 rounded-xl hover:bg-green-100"
+
+
+className="mt-6 bg-green-700 text-white px-8 py-3 rounded-lg"
+
+
 
 >
 
-
-{p.productName}
-
-<br/>
-
-₹ {p.sellingPrice}
-
-<br/>
-
-Stock:
-{p.currentStock}
-
-
-</button>
-
-
-))
-
-}
-
-
-</div>
-
-
-
-</div>
-
-
-
-
-
-
-
-
-<div className="bg-white shadow rounded-xl p-5 mt-5">
-
-
-<h2 className="font-bold mb-3">
-
-Cart
-
-</h2>
-
-
-
-{
-
-cart.map((item,index)=>(
-
-
-<div
-
-key={index}
-
-className="flex justify-between border-b p-3"
-
->
-
-
-<span>
-
-{item.productName}
-
-</span>
-
-
-
-<input
-
-type="number"
-
-min="1"
-
-value={item.quantity}
-
-onChange={
-e=>
-updateQuantity(
-index,
-e.target.value
-)
-}
-
-className="border w-20"
-
-/>
-
-
-
-</div>
-
-
-))
-
-}
-
-
-
-<h2 className="text-xl font-bold mt-5">
-
-Total:
-₹ {calculateTotal()}
-
-</h2>
-
-
-
-
-
-<button
-
-onClick={submitBill}
-
-className="bg-green-700 text-white px-5 py-3 rounded-xl mt-5"
-
->
 
 Generate Bill
 
+
 </button>
 
 
@@ -522,8 +620,24 @@ Generate Bill
 
 
 
-</div>
 
+
+
+{
+
+generatedBill &&
+
+<Invoice
+
+bill={generatedBill}
+
+/>
+
+}
+
+
+
+</div>
 
 );
 

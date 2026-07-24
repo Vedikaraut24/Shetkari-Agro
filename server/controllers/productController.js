@@ -1,410 +1,468 @@
 import Product from "../models/Product.js";
+import Category from "../models/Category.js";
+
 import fs from "fs";
 import csv from "csv-parser";
 import XLSX from "xlsx";
 
 
 
+// ===============================
 // CREATE PRODUCT
+// ===============================
 
-export const createProduct = async(req,res)=>{
+export const createProduct = async (req, res) => {
 
-try{
+    try {
 
+        const {
 
-const product =
-await Product.create(req.body);
+            category
 
+        } = req.body;
 
-res.status(201).json({
+        // Auto Create Category
+        if (category) {
 
-message:"Product Added",
+            const exists = await Category.findOne({
 
-product
+                name: category
 
-});
+            });
 
+            if (!exists) {
 
-}
-catch(error){
+                await Category.create({
 
-res.status(500).json({
+                    name: category
 
-message:error.message
+                });
 
-});
+            }
 
-}
+        }
+
+        const product = await Product.create(req.body);
+
+        res.status(201).json({
+
+            message: "Product Added",
+
+            product
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+
+            message: error.message
+
+        });
+
+    }
 
 };
 
 
 
-
-
+// ===============================
 // GET ALL PRODUCTS
+// ===============================
 
-export const getProducts = async(req,res)=>{
+export const getProducts = async (req, res) => {
 
-try{
+    try {
 
+        const products = await Product.find().sort({
 
-const products =
-await Product.find();
+            createdAt: -1
 
+        });
 
+        res.json(products);
 
-res.json(products);
+    }
 
+    catch (error) {
 
+        res.status(500).json({
 
-}
-catch(error){
+            message: error.message
 
-res.status(500).json({
+        });
 
-message:error.message
-
-});
-
-}
-
-};
-
-
-
-
-
-
-// GET SINGLE PRODUCT
-
-export const getProductById = async(req,res)=>{
-
-
-try{
-
-
-const product =
-await Product.findById(
-req.params.id
-);
-
-
-
-res.json(product);
-
-
-
-}
-catch(error){
-
-res.status(500).json({
-
-message:error.message
-
-});
-
-}
-
+    }
 
 };
 
 
 
+// ===============================
+// SEARCH PRODUCTS
+// GET /api/products/search?keyword=abc
+// ===============================
+
+export const searchProducts = async (req, res) => {
+
+    try {
+
+        const keyword = req.query.keyword || "";
+
+        const products = await Product.find({
+
+            $or: [
+
+                {
+
+                    productName: {
+
+                        $regex: keyword,
+
+                        $options: "i"
+
+                    }
+
+                },
+
+                {
+
+                    category: {
+
+                        $regex: keyword,
+
+                        $options: "i"
+
+                    }
+
+                },
+
+                {
+
+                    brand: {
+
+                        $regex: keyword,
+
+                        $options: "i"
+
+                    }
+
+                }
+
+            ]
+
+        })
+
+            .limit(10)
+
+            .sort({
+
+                productName: 1
+
+            });
+
+        res.json(products);
+
+    }
+
+    catch (error) {
+
+        res.status(500).json({
+
+            message: error.message
+
+        });
+
+    }
+
+};
 
 
 
+// ===============================
+// GET PRODUCT BY ID
+// ===============================
+
+export const getProductById = async (req, res) => {
+
+    try {
+
+        const product = await Product.findById(
+
+            req.params.id
+
+        );
+
+        if (!product) {
+
+            return res.status(404).json({
+
+                message: "Product not found"
+
+            });
+
+        }
+
+        res.json(product);
+
+    }
+
+    catch (error) {
+
+        res.status(500).json({
+
+            message: error.message
+
+        });
+
+    }
+
+};
 
 
+
+// ===============================
 // UPDATE PRODUCT
+// ===============================
 
-export const updateProduct = async(req,res)=>{
+export const updateProduct = async (req, res) => {
 
+    try {
 
-try{
+        const {
 
+            category
 
-const product =
-await Product.findByIdAndUpdate(
+        } = req.body;
 
-req.params.id,
+        if (category) {
 
-req.body,
+            const exists = await Category.findOne({
 
-{
-new:true
-}
+                name: category
 
-);
+            });
 
+            if (!exists) {
 
+                await Category.create({
 
-res.json(product);
+                    name: category
 
+                });
 
+            }
 
-}
-catch(error){
+        }
 
-res.status(500).json({
+        const product = await Product.findByIdAndUpdate(
 
-message:error.message
+            req.params.id,
 
-});
+            req.body,
 
-}
+            {
 
+                new: true,
+
+                runValidators: true
+
+            }
+
+        );
+
+        res.json(product);
+
+    }
+
+    catch (error) {
+
+        res.status(500).json({
+
+            message: error.message
+
+        });
+
+    }
 
 };
 
 
 
-
-
-
-
-
+// ===============================
 // DELETE PRODUCT
+// ===============================
 
-export const deleteProduct = async(req,res)=>{
+export const deleteProduct = async (req, res) => {
 
+    try {
 
-try{
+        await Product.findByIdAndDelete(
 
+            req.params.id
 
-await Product.findByIdAndDelete(
+        );
 
-req.params.id
+        res.json({
 
-);
+            message: "Deleted"
 
+        });
 
+    }
 
-res.json({
+    catch (error) {
 
-message:"Deleted"
+        res.status(500).json({
 
-});
+            message: error.message
 
+        });
 
-
-}
-catch(error){
-
-res.status(500).json({
-
-message:error.message
-
-});
-
-}
-
+    }
 
 };
 
 
 
-
-
-
-
-
-
+// ===============================
 // IMPORT CSV / EXCEL
+// ===============================
 
-export const importProducts = async(req,res)=>{
+export const importProducts = async (req, res) => {
 
+    try {
 
-try{
+        if (!req.file) {
 
+            return res.status(400).json({
 
-console.log("IMPORT REQUEST RECEIVED");
+                message: "No file uploaded"
 
-console.log(req.file);
+            });
 
+        }
 
+        let data = [];
 
-if(!req.file){
+        if (req.file.originalname.endsWith(".csv")) {
 
-return res.status(400).json({
+            data = await new Promise((resolve, reject) => {
 
-message:"No file uploaded"
+                const rows = [];
 
-});
+                fs.createReadStream(req.file.path)
 
-}
+                    .pipe(csv())
 
+                    .on("data", (row) => rows.push(row))
 
+                    .on("end", () => resolve(rows))
 
+                    .on("error", reject);
 
-let data=[];
+            });
 
+        }
 
+        else {
 
-if(
-req.file.originalname.endsWith(".csv")
-){
+            const workbook = XLSX.readFile(
 
+                req.file.path
 
-data =
-await new Promise(
-(resolve,reject)=>{
+            );
 
+            const sheet = workbook.Sheets[
 
-const rows=[];
+                workbook.SheetNames[0]
 
+            ];
 
+            data = XLSX.utils.sheet_to_json(sheet);
 
-fs.createReadStream(
-req.file.path
-)
+        }
 
-.pipe(csv())
+        let count = 0;
 
-.on(
-"data",
-(row)=>rows.push(row)
-)
+        for (const item of data) {
 
-.on(
-"end",
-()=>resolve(rows)
-)
+            if (item.category) {
 
-.on(
-"error",
-reject
-);
+                const exists = await Category.findOne({
 
+                    name: item.category
 
-}
+                });
 
-);
+                if (!exists) {
 
+                    await Category.create({
 
+                        name: item.category
 
-}
-else{
+                    });
 
+                }
 
-const workbook =
-XLSX.readFile(
-req.file.path
-);
+            }
 
+            await Product.create({
 
+                productName: item.productName,
 
-const sheet =
-workbook.Sheets[
-workbook.SheetNames[0]
-];
+                category: item.category,
 
+                brand: item.brand || "",
 
+                purchasePrice: Number(item.purchasePrice),
 
-data =
-XLSX.utils.sheet_to_json(
-sheet
-);
+                sellingPrice: Number(item.sellingPrice),
 
+                gst: Number(item.gst || 0),
 
-}
+                currentStock: Number(item.currentStock || 0),
 
+                minimumStock: Number(item.minimumStock || 5),
 
+                unit: item.unit || "packet",
 
+                expiryDate: item.expiryDate || null,
 
-console.log(
-"IMPORT DATA",
-data
-);
+                supplier: item.supplier || ""
 
+            });
 
+            count++;
 
-let count=0;
+        }
 
+        fs.unlinkSync(req.file.path);
 
+        res.json({
 
-for(
-const item of data
-){
+            message: "Import completed",
 
+            inserted: count
 
-await Product.create({
+        });
 
-productName:item.productName,
+    }
 
-category:item.category,
+    catch (error) {
 
-brand:item.brand || "",
+        console.log(error);
 
-purchasePrice:
-Number(item.purchasePrice),
+        res.status(500).json({
 
-sellingPrice:
-Number(item.sellingPrice),
+            message: error.message
 
-gst:
-Number(item.gst || 0),
+        });
 
-currentStock:
-Number(item.currentStock || 0),
-
-minimumStock:
-Number(item.minimumStock || 5),
-
-unit:
-item.unit || "packet",
-
-expiryDate:
-item.expiryDate || null,
-
-supplier:
-item.supplier || ""
-
-});
-
-
-
-count++;
-
-
-}
-
-
-
-fs.unlinkSync(
-req.file.path
-);
-
-
-
-res.json({
-
-message:"Import completed",
-
-inserted:count
-
-});
-
-
-
-}
-catch(error){
-
-
-console.log(
-"IMPORT ERROR",
-error
-);
-
-
-
-res.status(500).json({
-
-message:error.message
-
-});
-
-
-}
+    }
 
 };

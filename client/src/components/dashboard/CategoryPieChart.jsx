@@ -17,25 +17,43 @@ const COLORS = [
     "#ec4899"
 ];
 
-export default function CategoryPieChart({ data }) {
+export default function CategoryPieChart({
+
+    data = []
+
+}) {
+
+    const chartData = data.map(item => ({
+
+        name: item._id,
+
+        value: item.value
+
+    }));
 
     return (
 
-        <div className="bg-white rounded-2xl shadow p-5">
+        <div className="bg-white rounded-2xl shadow-lg p-6">
 
-            <h2 className="text-xl font-bold mb-5">
+            <h2 className="text-xl font-bold text-green-700 mb-5">
 
                 Category Distribution
 
             </h2>
 
-            <ResponsiveContainer width="100%" height={320}>
+            <ResponsiveContainer
+
+                width="100%"
+
+                height={320}
+
+            >
 
                 <PieChart>
 
                     <Pie
 
-                        data={data}
+                        data={chartData}
 
                         dataKey="value"
 
@@ -49,7 +67,7 @@ export default function CategoryPieChart({ data }) {
 
                         {
 
-                            data.map((entry, index) => (
+                            chartData.map((entry, index) => (
 
                                 <Cell
 
