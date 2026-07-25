@@ -18,8 +18,6 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 
 
-// Load Environment Variables
-
 dotenv.config();
 
 
@@ -30,106 +28,110 @@ const app = express();
 
 
 // ===============================
-// CORS CONFIGURATION
+// CORS FIX
 // ===============================
 
 
 const allowedOrigins = [
 
-
-    "https://shetkari-agro.vercel.app",
-
-
     "http://localhost:5173",
 
+    "http://localhost:3000",
 
-    "http://localhost:3000"
-
+    "https://shetkari-agro.vercel.app"
 
 ];
 
 
 
 
-app.use(
-
-    cors({
-
-        origin:(origin,callback)=>{
+const corsOptions = {
 
 
-            // Allow mobile apps, Postman, server requests
-
-            if(!origin){
-
-                return callback(null,true);
-
-            }
+    origin:(origin,callback)=>{
 
 
+        // Allow requests without origin
+        // (Postman, mobile apps)
 
+        if(!origin){
 
-            if(
-                allowedOrigins.includes(origin)
-            ){
+            return callback(null,true);
 
-                return callback(null,true);
-
-            }
+        }
 
 
 
-            console.log(
-                "Blocked CORS Origin:",
-                origin
-            );
+        // Allow all Vercel deployments
+
+        if(
+
+            origin.endsWith(".vercel.app")
+
+            ||
+
+            allowedOrigins.includes(origin)
+
+        ){
+
+            return callback(null,true);
+
+        }
 
 
 
-            return callback(
-                new Error("CORS not allowed")
-            );
+        console.log(
+            "Blocked CORS:",
+            origin
+        );
 
 
-        },
+        return callback(null,false);
 
 
-        methods:[
-
-            "GET",
-            "POST",
-            "PUT",
-            "DELETE",
-            "PATCH",
-            "OPTIONS"
-
-        ],
+    },
 
 
-        allowedHeaders:[
+    methods:[
 
-            "Content-Type",
-            "Authorization"
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "OPTIONS"
 
-        ],
-
-
-        credentials:true
-
-
-    })
-
-);
+    ],
 
 
+    allowedHeaders:[
+
+        "Content-Type",
+        "Authorization"
+
+    ],
 
 
-// Express 5 compatible preflight
+    credentials:true
+
+
+};
+
+
+
+
+
+app.use(cors(corsOptions));
+
+
+
+// Express 5 compatible OPTIONS
 
 app.options(
     "/{*any}",
-    cors()
+    cors(corsOptions)
 );
+
 
 
 
@@ -170,28 +172,27 @@ app.use(
 
 
 
+
 // ===============================
-// HEALTH CHECK
+// TEST ROUTE
 // ===============================
 
 
-app.get(
-    "/",
-    (req,res)=>{
+app.get("/",(req,res)=>{
 
 
-        res.json({
+    res.json({
 
-            success:true,
+        success:true,
 
-            message:
-            "Shetkari Agro API Running"
+        message:
+        "Shetkari Agro API Running"
 
-        });
+    });
 
 
-    }
-);
+});
+
 
 
 
@@ -324,6 +325,7 @@ mongoose.connect(
 // ===============================
 
 
+
 const PORT =
 process.env.PORT || 5000;
 
@@ -332,18 +334,18 @@ process.env.PORT || 5000;
 
 app.listen(
 
-    PORT,
+PORT,
 
-    ()=>{
-
-
-        console.log(
-
-            `Server running on port ${PORT}`
-
-        );
+()=>{
 
 
-    }
+console.log(
+
+`Server running on port ${PORT}`
+
+);
+
+
+}
 
 );
