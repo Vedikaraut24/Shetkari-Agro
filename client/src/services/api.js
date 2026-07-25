@@ -4,13 +4,20 @@ import axios from "axios";
 const API = axios.create({
 
     baseURL:
-    "https://shetkari-agro.onrender.com/api"
+    "https://shetkari-agro.onrender.com/api",
+
+    timeout:30000,
+
+    headers:{
+        "Content-Type":"application/json"
+    }
 
 });
 
 
 
 API.interceptors.request.use(
+
 (config)=>{
 
 
@@ -28,7 +35,17 @@ API.interceptors.request.use(
 
     return config;
 
-});
+
+},
+
+(error)=>{
+
+    return Promise.reject(error);
+
+}
+
+);
+
 
 
 export default API;

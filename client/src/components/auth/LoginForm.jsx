@@ -7,6 +7,7 @@ import API from "../../services/api";
 
 export default function LoginForm(){
 
+
     const {
         register,
         handleSubmit
@@ -19,20 +20,42 @@ export default function LoginForm(){
 
     const onSubmit = async(data)=>{
 
+
         try{
+
+
+            toast.info(
+                "Connecting to server..."
+            );
 
 
             const response = await API.post(
                 "/auth/login",
                 {
-                    username:data.username,
+                    username:data.username.trim(),
                     password:data.password
+                },
+                {
+                    timeout:30000
                 }
             );
 
 
 
-            // Save authentication data
+            if(!response.data.token){
+
+                throw new Error(
+                    "Token not received"
+                );
+
+            }
+
+
+
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+
+
 
             localStorage.setItem(
                 "token",
@@ -42,7 +65,9 @@ export default function LoginForm(){
 
             localStorage.setItem(
                 "user",
-                JSON.stringify(response.data.user)
+                JSON.stringify(
+                    response.data.user
+                )
             );
 
 
@@ -52,38 +77,41 @@ export default function LoginForm(){
             );
 
 
-            navigate("/dashboard");
+
+            setTimeout(()=>{
+
+                navigate("/dashboard");
+
+            },500);
+
 
 
         }
-
-
         catch(error){
 
 
             console.log(
-                "LOGIN ERROR:",
-                error.response?.data || error.message
+                "LOGIN ERROR",
+                error
             );
 
 
 
-            if(error.response){
-
+            if(error.code==="ECONNABORTED"){
 
                 toast.error(
-                    error.response.data.message ||
-                    "Invalid username or password"
+                    "Server is waking up. Try again."
                 );
-
 
             }
 
-            else if(error.request){
-
+            else if(error.response){
 
                 toast.error(
-                    "Server not reachable. Please try again."
+
+                    error.response.data?.message ||
+                    "Invalid username or password"
+
                 );
 
 
@@ -93,7 +121,7 @@ export default function LoginForm(){
 
 
                 toast.error(
-                    "Login failed"
+                    "Unable to connect with server"
                 );
 
 
@@ -110,195 +138,116 @@ export default function LoginForm(){
 
     return(
 
-
         <form
-
         onSubmit={
             handleSubmit(onSubmit)
         }
-
         className="space-y-5"
-
         >
-
 
 
             <div>
 
-
-                <label
-
-                className="
-                block
-                text-sm
-                font-medium
-                text-gray-700
-                mb-1
-                "
-
-                >
-
+                <label className="block text-sm font-medium mb-1">
                     Username
-
                 </label>
-
 
 
                 <input
 
-
                 type="text"
 
-
                 placeholder="Enter username"
-
-
 
                 {...register(
                     "username",
                     {
-                        required:
-                        "Username is required"
+                        required:true
                     }
                 )}
-
-
 
                 className="
                 w-full
                 px-4
                 py-3
-                rounded-xl
                 border
+                rounded-xl
+                outline-none
                 focus:ring-2
                 focus:ring-green-600
-                outline-none
                 "
 
-
                 />
-
-
 
             </div>
 
 
 
 
-
-
             <div>
 
 
-
-                <label
-
-                className="
-                block
-                text-sm
-                font-medium
-                text-gray-700
-                mb-1
-                "
-
-                >
-
+                <label className="block text-sm font-medium mb-1">
                     Password
-
                 </label>
-
 
 
                 <input
 
-
-
                 type="password"
 
-
-
                 placeholder="Enter password"
-
-
 
 
                 {...register(
                     "password",
                     {
-                        required:
-                        "Password is required"
+                        required:true
                     }
                 )}
-
-
 
 
                 className="
                 w-full
                 px-4
                 py-3
-                rounded-xl
                 border
+                rounded-xl
+                outline-none
                 focus:ring-2
                 focus:ring-green-600
-                outline-none
                 "
-
 
                 />
 
-
-
             </div>
-
-
-
 
 
 
 
             <button
 
-
             type="submit"
 
-
-
             className="
-
             w-full
-
-            py-3
-
-            rounded-xl
-
             bg-green-700
-
             text-white
-
+            py-3
+            rounded-xl
             font-semibold
-
             hover:bg-green-800
-
-            transition
-
             "
-
 
             >
 
-
-                Login
-
+            Login
 
             </button>
 
 
 
-
-
         </form>
-
 
     );
 
