@@ -28,117 +28,45 @@ const app = express();
 
 
 // ===============================
-// CORS FIX
+// CORS CONFIGURATION
 // ===============================
 
 
-const allowedOrigins = [
+app.use(
 
-    "http://localhost:5173",
+    cors({
 
-    "http://localhost:3000",
+        origin: true,
 
-    "https://shetkari-agro.vercel.app"
+        credentials: true,
 
-];
+        methods: [
 
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "PATCH",
+            "OPTIONS"
 
+        ],
 
+        allowedHeaders: [
 
-const corsOptions = {
+            "Content-Type",
+            "Authorization"
 
+        ]
 
-    origin:(origin,callback)=>{
+    })
 
-
-        // Allow requests without origin
-        // (Postman, mobile apps)
-
-        if(!origin){
-
-            return callback(null,true);
-
-        }
-
-
-
-        // Allow all Vercel deployments
-
-        if(
-
-            origin.endsWith(".vercel.app")
-
-            ||
-
-            allowedOrigins.includes(origin)
-
-        ){
-
-            return callback(null,true);
-
-        }
-
-
-
-        console.log(
-            "Blocked CORS:",
-            origin
-        );
-
-
-        return callback(null,false);
-
-
-    },
-
-
-    methods:[
-
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "PATCH",
-        "OPTIONS"
-
-    ],
-
-
-    allowedHeaders:[
-
-        "Content-Type",
-        "Authorization"
-
-    ],
-
-
-    credentials:true
-
-
-};
-
-
-
-
-
-app.use(cors(corsOptions));
-
-
-
-// Express 5 compatible OPTIONS
-
-app.options(
-    "/{*any}",
-    cors(corsOptions)
 );
 
 
 
 
-
-
 // ===============================
-// MIDDLEWARE
+// BODY PARSER
 // ===============================
 
 
@@ -157,10 +85,16 @@ app.use(
 
 
 
+
+
+// ===============================
+// SECURITY + LOGGING
+// ===============================
+
+
 app.use(
     helmet()
 );
-
 
 
 app.use(
@@ -172,21 +106,19 @@ app.use(
 
 
 
-
 // ===============================
-// TEST ROUTE
+// HEALTH CHECK
 // ===============================
 
 
 app.get("/",(req,res)=>{
 
 
-    res.json({
+    res.status(200).json({
 
         success:true,
 
-        message:
-        "Shetkari Agro API Running"
+        message:"Shetkari Agro API Running"
 
     });
 
@@ -202,7 +134,6 @@ app.get("/",(req,res)=>{
 // ===============================
 // API ROUTES
 // ===============================
-
 
 
 app.use(
@@ -279,10 +210,42 @@ app.use(
 
 
 
+
+// ===============================
+// ERROR HANDLER
+// ===============================
+
+
+app.use((err,req,res,next)=>{
+
+
+    console.log(
+        "SERVER ERROR:",
+        err.message
+    );
+
+
+    res.status(500).json({
+
+        success:false,
+
+        message:err.message
+
+    });
+
+
+});
+
+
+
+
+
+
+
+
 // ===============================
 // DATABASE CONNECTION
 // ===============================
-
 
 
 mongoose.connect(
@@ -320,32 +283,31 @@ mongoose.connect(
 
 
 
+
 // ===============================
 // SERVER START
 // ===============================
 
 
-
-const PORT =
+const PORT = 
 process.env.PORT || 5000;
-
 
 
 
 app.listen(
 
-PORT,
+    PORT,
 
-()=>{
-
-
-console.log(
-
-`Server running on port ${PORT}`
-
-);
+    ()=>{
 
 
-}
+        console.log(
+
+            `Server running on port ${PORT}`
+
+        );
+
+
+    }
 
 );
