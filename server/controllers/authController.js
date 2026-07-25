@@ -5,13 +5,13 @@ import jwt from "jsonwebtoken";
 
 
 // =======================
-// LOGIN ADMIN
+// ADMIN LOGIN
 // =======================
 
-export const login = async(req,res)=>{
+export const login = async (req, res) => {
 
 
-    try{
+    try {
 
 
         const {
@@ -21,22 +21,19 @@ export const login = async(req,res)=>{
 
 
 
+        // =======================
+        // VALIDATION
+        // =======================
 
 
-        // Validation
-
-        if(
-            !username ||
-            !password
-        ){
+        if (!username || !password) {
 
 
             return res.status(400).json({
 
                 success:false,
 
-                message:
-                "Username and password required"
+                message:"Username and password required"
 
             });
 
@@ -45,20 +42,24 @@ export const login = async(req,res)=>{
 
 
 
+        const cleanUsername =
+        username.trim().toLowerCase();
 
 
 
 
-        // Find admin
+
+        // =======================
+        // FIND ADMIN
+        // =======================
 
 
         const admin =
         await Admin.findOne({
 
-            username:username.trim()
+            username:cleanUsername
 
         });
-
 
 
 
@@ -70,8 +71,7 @@ export const login = async(req,res)=>{
 
                 success:false,
 
-                message:
-                "Invalid username or password"
+                message:"Invalid username or password"
 
             });
 
@@ -82,13 +82,12 @@ export const login = async(req,res)=>{
 
 
 
+        // =======================
+        // PASSWORD VERIFY
+        // =======================
 
 
-
-        // Password check
-
-
-        const match =
+        const passwordMatch =
         await bcrypt.compare(
 
             password,
@@ -100,16 +99,14 @@ export const login = async(req,res)=>{
 
 
 
-
-        if(!match){
+        if(!passwordMatch){
 
 
             return res.status(401).json({
 
                 success:false,
 
-                message:
-                "Invalid username or password"
+                message:"Invalid username or password"
 
             });
 
@@ -122,7 +119,10 @@ export const login = async(req,res)=>{
 
 
 
-        // Check JWT secret
+
+        // =======================
+        // JWT CHECK
+        // =======================
 
 
         if(!process.env.JWT_SECRET){
@@ -137,8 +137,7 @@ export const login = async(req,res)=>{
 
                 success:false,
 
-                message:
-                "Server configuration error"
+                message:"Server configuration error"
 
             });
 
@@ -151,10 +150,13 @@ export const login = async(req,res)=>{
 
 
 
-        // Create Token
+
+        // =======================
+        // CREATE TOKEN
+        // =======================
 
 
-        const payload={
+        const user = {
 
 
             id:admin._id,
@@ -163,8 +165,7 @@ export const login = async(req,res)=>{
             username:admin.username,
 
 
-            role:
-            admin.role || "admin"
+            role:admin.role || "admin"
 
 
         };
@@ -172,11 +173,11 @@ export const login = async(req,res)=>{
 
 
 
-
         const token =
+
         jwt.sign(
 
-            payload,
+            user,
 
             process.env.JWT_SECRET,
 
@@ -195,28 +196,24 @@ export const login = async(req,res)=>{
 
 
 
-        return res.status(200).json({
+        // =======================
+        // RESPONSE
+        // =======================
 
+
+        return res.status(200).json({
 
             success:true,
 
-
-            message:
-            "Login successful",
-
-
+            message:"Login successful",
 
             token,
 
 
-
-            user:payload
-
+            user
 
 
         });
-
-
 
 
 
@@ -225,10 +222,12 @@ export const login = async(req,res)=>{
     catch(error){
 
 
-
         console.log(
+
             "LOGIN ERROR:",
+
             error.message
+
         );
 
 
@@ -237,15 +236,12 @@ export const login = async(req,res)=>{
 
             success:false,
 
-            message:
-            "Server error"
+            message:"Internal server error"
 
         });
 
 
-
     }
-
 
 
 };

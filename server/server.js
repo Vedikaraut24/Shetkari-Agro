@@ -26,34 +26,79 @@ const app = express();
 
 
 
-
 // ===============================
 // CORS CONFIGURATION
 // ===============================
+
+
+const allowedOrigins = [
+
+    "https://shetkari-agro.vercel.app",
+
+    "https://shetkari-agro-bj06ci0ea-vedika9.vercel.app",
+
+    "https://shetkari-agro-6y8egshqd-vedika9.vercel.app",
+
+    "http://localhost:5173"
+
+];
+
 
 
 app.use(
 
     cors({
 
-        origin: true,
+        origin:(origin,callback)=>{
 
-        credentials: true,
 
-        methods: [
+            // Allow Postman/mobile apps
+
+            if(!origin){
+
+                return callback(null,true);
+
+            }
+
+
+
+            if(allowedOrigins.includes(origin)){
+
+                return callback(null,true);
+
+            }
+
+
+
+            return callback(
+
+                new Error("CORS blocked")
+
+            );
+
+
+        },
+
+
+        credentials:true,
+
+
+        methods:[
 
             "GET",
             "POST",
             "PUT",
-            "DELETE",
             "PATCH",
+            "DELETE",
             "OPTIONS"
 
         ],
 
-        allowedHeaders: [
+
+        allowedHeaders:[
 
             "Content-Type",
+
             "Authorization"
 
         ]
@@ -65,41 +110,60 @@ app.use(
 
 
 
+
+
 // ===============================
 // BODY PARSER
 // ===============================
 
 
 app.use(
+
     express.json()
+
 );
 
 
+
 app.use(
+
     express.urlencoded({
 
         extended:true
 
     })
+
 );
 
 
 
 
 
+
+
 // ===============================
-// SECURITY + LOGGING
+// SECURITY
 // ===============================
 
 
 app.use(
-    helmet()
+
+    helmet({
+
+        crossOriginResourcePolicy:false
+
+    })
+
 );
 
 
+
 app.use(
+
     morgan("dev")
+
 );
+
 
 
 
@@ -124,6 +188,8 @@ app.get("/",(req,res)=>{
 
 
 });
+
+
 
 
 
@@ -220,8 +286,11 @@ app.use((err,req,res,next)=>{
 
 
     console.log(
+
         "SERVER ERROR:",
+
         err.message
+
     );
 
 
@@ -235,6 +304,7 @@ app.use((err,req,res,next)=>{
 
 
 });
+
 
 
 
@@ -258,7 +328,9 @@ mongoose.connect(
 
 
     console.log(
+
         "MongoDB Connected"
+
     );
 
 
@@ -270,6 +342,7 @@ mongoose.connect(
     console.log(
 
         "MongoDB Error:",
+
         error.message
 
     );
@@ -289,7 +362,8 @@ mongoose.connect(
 // ===============================
 
 
-const PORT = 
+const PORT =
+
 process.env.PORT || 5000;
 
 

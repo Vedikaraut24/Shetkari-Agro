@@ -4,8 +4,7 @@ import API from "./api";
 
 export const getCategories = async()=>{
 
-    const res =
-    await API.get("/categories");
+    const res = await API.get("/categories");
 
     return res.data;
 
@@ -15,9 +14,7 @@ export const getCategories = async()=>{
 
 export const createCategory = async(data)=>{
 
-
-    const res =
-    await API.post(
+    const res = await API.post(
 
         "/categories",
 
@@ -25,20 +22,15 @@ export const createCategory = async(data)=>{
 
     );
 
-
     return res.data;
-
 
 };
 
 
 
-
 export const updateCategory = async(id,data)=>{
 
-
-    const res =
-    await API.put(
+    const res = await API.put(
 
         `/categories/${id}`,
 
@@ -46,28 +38,20 @@ export const updateCategory = async(id,data)=>{
 
     );
 
-
     return res.data;
-
 
 };
 
 
 
-
-
 export const deleteCategory = async(id)=>{
 
-
-    const res =
-    await API.delete(
+    const res = await API.delete(
 
         `/categories/${id}`
 
     );
 
-
     return res.data;
-
 
 };

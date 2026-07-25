@@ -9,11 +9,38 @@ const router = express.Router();
 
 
 
-// Admin Login
+// ===============================
+// AUTH HEALTH CHECK
+// ===============================
+
+router.get(
+    "/",
+    (req,res)=>{
+
+        res.json({
+
+            success:true,
+
+            message:"Auth API Running"
+
+        });
+
+    }
+);
+
+
+
+
+// ===============================
+// ADMIN LOGIN
+// ===============================
 
 router.post(
+
     "/login",
+
     login
+
 );
 
 

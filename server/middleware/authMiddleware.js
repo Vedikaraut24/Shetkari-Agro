@@ -13,7 +13,10 @@ const authMiddleware = (req,res,next)=>{
 
 
 
-        // Check Authorization header
+        // ===============================
+        // CHECK TOKEN HEADER
+        // ===============================
+
 
         if(!authHeader){
 
@@ -33,15 +36,20 @@ const authMiddleware = (req,res,next)=>{
 
 
 
+
         const parts =
-        authHeader.split(" ");
+        authHeader.trim().split(/\s+/);
+
 
 
 
 
         if(
+
             parts.length !== 2 ||
-            parts[0] !== "Bearer"
+
+            parts[0].toLowerCase() !== "bearer"
+
         ){
 
 
@@ -49,7 +57,7 @@ const authMiddleware = (req,res,next)=>{
 
                 success:false,
 
-                message:"Invalid authorization format"
+                message:"Invalid token format"
 
             });
 
@@ -80,7 +88,7 @@ const authMiddleware = (req,res,next)=>{
 
                 success:false,
 
-                message:"Server authentication configuration error"
+                message:"Server configuration error"
 
             });
 
@@ -93,7 +101,14 @@ const authMiddleware = (req,res,next)=>{
 
 
 
+
+        // ===============================
+        // VERIFY TOKEN
+        // ===============================
+
+
         const decoded =
+
         jwt.verify(
 
             token,
@@ -106,14 +121,15 @@ const authMiddleware = (req,res,next)=>{
 
 
 
-        if(!decoded){
+
+        if(!decoded?.id){
 
 
             return res.status(401).json({
 
                 success:false,
 
-                message:"Invalid token"
+                message:"Invalid session"
 
             });
 
@@ -126,13 +142,22 @@ const authMiddleware = (req,res,next)=>{
 
 
 
-        req.user={
+        // ===============================
+        // ATTACH USER
+        // ===============================
+
+
+        req.user = {
+
 
             id:decoded.id,
 
+
             username:decoded.username,
 
-            role:decoded.role
+
+            role:decoded.role || "admin"
+
 
         };
 
@@ -153,8 +178,11 @@ const authMiddleware = (req,res,next)=>{
 
 
         console.log(
+
             "AUTH ERROR:",
+
             error.message
+
         );
 
 
@@ -163,8 +191,7 @@ const authMiddleware = (req,res,next)=>{
 
             success:false,
 
-            message:
-            "Session expired. Please login again."
+            message:"Session expired. Login again."
 
         });
 

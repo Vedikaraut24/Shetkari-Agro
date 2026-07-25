@@ -1,38 +1,61 @@
 import Category from "../models/Category.js";
 
 
+
 // ===============================
 // GET ALL CATEGORIES
 // ===============================
 
-export const getCategories = async (req, res) => {
+export const getCategories = async(req,res)=>{
 
-    try {
+
+    try{
+
 
         const categories = await Category.find()
-            .sort({
-                createdAt: -1
-            });
+
+        .sort({
+
+            name:1
+
+        });
+
 
 
         res.status(200).json(categories);
 
 
-    } catch (error) {
 
-        console.error("GET CATEGORIES ERROR:");
-        console.error(error);
+    }
+
+    catch(error){
+
+
+        console.log(
+
+            "GET CATEGORY ERROR:",
+
+            error.message
+
+        );
 
 
         res.status(500).json({
 
-            message: error.message
+            success:false,
+
+            message:error.message
 
         });
 
+
     }
 
+
 };
+
+
+
 
 
 
@@ -41,75 +64,95 @@ export const getCategories = async (req, res) => {
 // CREATE CATEGORY
 // ===============================
 
-export const createCategory = async (req, res) => {
-
-    try {
+export const createCategory = async(req,res)=>{
 
 
-        console.log("CATEGORY REQUEST BODY:");
-        console.log(req.body);
-
+    try{
 
 
         const {
-            name,
-            description
+
+            name
+
         } = req.body;
 
 
 
-        if (!name || name.trim() === "") {
+
+
+        if(!name || !name.trim()){
+
 
             return res.status(400).json({
 
-                message: "Category name is required"
+                success:false,
+
+                message:"Category name required"
 
             });
+
 
         }
 
 
 
-        const existingCategory = await Category.findOne({
 
-            name: name.trim()
+
+
+        const cleanName =
+        name.trim();
+
+
+
+
+
+        const exists =
+        await Category.findOne({
+
+            name:cleanName
 
         });
 
 
 
-        if (existingCategory) {
+
+
+        if(exists){
+
 
             return res.status(400).json({
 
-                message: "Category already exists"
+                success:false,
+
+                message:"Category already exists"
 
             });
+
 
         }
 
 
 
-        const category = await Category.create({
 
-            name: name.trim(),
 
-            description: description || ""
+        const category =
+
+        await Category.create({
+
+            name:cleanName
 
         });
 
 
 
-        console.log("CATEGORY CREATED:");
-        console.log(category);
 
 
 
         res.status(201).json({
 
-            success: true,
+            success:true,
 
-            message: "Category created successfully",
+            message:"Category created",
 
             category
 
@@ -117,11 +160,20 @@ export const createCategory = async (req, res) => {
 
 
 
-    } catch (error) {
 
 
-        console.error("CREATE CATEGORY ERROR:");
-        console.error(error);
+    }
+
+    catch(error){
+
+
+        console.log(
+
+            "CREATE CATEGORY ERROR:",
+
+            error.message
+
+        );
 
 
 
@@ -136,7 +188,13 @@ export const createCategory = async (req, res) => {
 
     }
 
+
 };
+
+
+
+
+
 
 
 
@@ -145,22 +203,55 @@ export const createCategory = async (req, res) => {
 // UPDATE CATEGORY
 // ===============================
 
-export const updateCategory = async (req, res) => {
 
-    try {
+export const updateCategory = async(req,res)=>{
 
 
-        const category = await Category.findByIdAndUpdate(
+    try{
+
+
+        const {
+
+            name
+
+        } = req.body;
+
+
+
+
+        if(!name || !name.trim()){
+
+
+            return res.status(400).json({
+
+                success:false,
+
+                message:"Category name required"
+
+            });
+
+
+        }
+
+
+
+
+
+
+        const category =
+
+        await Category.findByIdAndUpdate(
+
 
             req.params.id,
 
+
             {
 
-                name:req.body.name,
-
-                description:req.body.description || ""
+                name:name.trim()
 
             },
+
 
             {
 
@@ -170,27 +261,39 @@ export const updateCategory = async (req, res) => {
 
             }
 
+
         );
 
 
 
-        if (!category) {
+
+
+
+
+        if(!category){
+
 
             return res.status(404).json({
+
+                success:false,
 
                 message:"Category not found"
 
             });
 
+
         }
 
 
 
-        res.status(200).json({
+
+
+
+        res.json({
 
             success:true,
 
-            message:"Category updated successfully",
+            message:"Category updated",
 
             category
 
@@ -198,15 +301,25 @@ export const updateCategory = async (req, res) => {
 
 
 
-    } catch(error) {
 
 
-        console.error("UPDATE CATEGORY ERROR:");
-        console.error(error);
+    }
 
+    catch(error){
+
+
+        console.log(
+
+            "UPDATE CATEGORY ERROR:",
+
+            error.message
+
+        );
 
 
         res.status(500).json({
+
+            success:false,
 
             message:error.message
 
@@ -215,7 +328,13 @@ export const updateCategory = async (req, res) => {
 
     }
 
+
 };
+
+
+
+
+
 
 
 
@@ -224,12 +343,16 @@ export const updateCategory = async (req, res) => {
 // DELETE CATEGORY
 // ===============================
 
-export const deleteCategory = async (req,res)=>{
 
-    try {
+export const deleteCategory = async(req,res)=>{
 
 
-        const category = await Category.findByIdAndDelete(
+    try{
+
+
+        const category =
+
+        await Category.findByIdAndDelete(
 
             req.params.id
 
@@ -237,37 +360,56 @@ export const deleteCategory = async (req,res)=>{
 
 
 
+
+
         if(!category){
 
+
             return res.status(404).json({
+
+                success:false,
 
                 message:"Category not found"
 
             });
 
+
         }
 
 
 
-        res.status(200).json({
+
+
+        res.json({
 
             success:true,
 
-            message:"Category deleted successfully"
+            message:"Category deleted"
 
         });
 
 
 
-    } catch(error){
 
 
-        console.error("DELETE CATEGORY ERROR:");
-        console.error(error);
+    }
+
+    catch(error){
+
+
+        console.log(
+
+            "DELETE CATEGORY ERROR:",
+
+            error.message
+
+        );
 
 
 
         res.status(500).json({
+
+            success:false,
 
             message:error.message
 
@@ -275,5 +417,6 @@ export const deleteCategory = async (req,res)=>{
 
 
     }
+
 
 };

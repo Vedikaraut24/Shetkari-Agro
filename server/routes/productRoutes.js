@@ -3,21 +3,19 @@ import express from "express";
 
 import {
 
-createProduct,
-getProducts,
-updateProduct,
-deleteProduct,
-getProductById,
-searchProducts,
-importProducts
+    createProduct,
+    getProducts,
+    updateProduct,
+    deleteProduct,
+    getProductById,
+    searchProducts,
+    importProducts
 
-}
+} from "../controllers/productController.js";
 
-from "../controllers/productController.js";
 
 
 import authMiddleware from "../middleware/authMiddleware.js";
-import roleMiddleware from "../middleware/roleMiddleware.js";
 
 
 
@@ -25,60 +23,134 @@ const router = express.Router();
 
 
 
+
+// ===============================
+// AUTH REQUIRED
+// ===============================
+
 router.use(authMiddleware);
 
 
 
+
+
+// ===============================
+// GET ALL PRODUCTS
+// ===============================
+
 router.get(
-"/",
-getProducts
+
+    "/",
+
+    getProducts
+
 );
 
 
 
+
+
+// ===============================
+// SEARCH PRODUCT
+// ===============================
+
 router.get(
-"/search",
-searchProducts
+
+    "/search",
+
+    searchProducts
+
 );
 
 
 
+
+
+
+// ===============================
+// GET SINGLE PRODUCT
+// ===============================
+
 router.get(
-"/:id",
-getProductById
+
+    "/:id",
+
+    getProductById
+
 );
 
 
+
+
+
+
+// ===============================
+// CREATE PRODUCT
+// ===============================
 
 router.post(
-"/",
-roleMiddleware("admin"),
-createProduct
+
+    "/",
+
+    createProduct
+
 );
 
 
+
+
+
+
+// ===============================
+// UPDATE PRODUCT
+// ===============================
 
 router.put(
-"/:id",
-roleMiddleware("admin"),
-updateProduct
+
+    "/:id",
+
+    updateProduct
+
 );
 
 
+
+
+
+
+
+// ===============================
+// DELETE PRODUCT
+// ===============================
 
 router.delete(
-"/:id",
-roleMiddleware("admin"),
-deleteProduct
+
+    "/:id",
+
+    deleteProduct
+
 );
 
 
+
+
+
+
+
+// ===============================
+// IMPORT PRODUCTS
+// ===============================
 
 router.post(
-"/import",
-roleMiddleware("admin"),
-importProducts
+
+    "/import",
+
+    importProducts
+
 );
+
+
+
 
 
 

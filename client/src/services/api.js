@@ -1,44 +1,66 @@
 import axios from "axios";
 
 
+
 const API = axios.create({
 
+
     baseURL:
+
+    import.meta.env.VITE_API_URL ||
+
     "https://shetkari-agro.onrender.com/api",
 
-    headers:{
-        "Content-Type":"application/json"
-    }
+
+    timeout:15000,
+
 
 });
 
 
 
 
-// Attach JWT automatically
+
+
+
+// ===============================
+// ADD JWT TOKEN
+// ===============================
+
 
 API.interceptors.request.use(
+
 
     (config)=>{
 
 
         const token =
+
         localStorage.getItem("token");
+
 
 
 
         if(token){
 
+
             config.headers.Authorization =
+
             `Bearer ${token}`;
 
+
         }
+
+
+
 
 
         return config;
 
 
+
     },
+
 
 
     (error)=>{
@@ -49,13 +71,22 @@ API.interceptors.request.use(
 
     }
 
+
+
 );
 
 
 
 
 
-// Global response error handler
+
+
+
+
+// ===============================
+// GLOBAL ERROR HANDLER
+// ===============================
+
 
 API.interceptors.response.use(
 
@@ -69,16 +100,42 @@ API.interceptors.response.use(
     },
 
 
+
     (error)=>{
+
 
 
         if(error.response){
 
 
+
             console.log(
-                "API ERROR:",
+
+                "SERVER ERROR:",
+
+                error.response.status,
+
                 error.response.data
+
             );
+
+
+
+            // Token expired
+
+            if(error.response.status === 401){
+
+
+                localStorage.removeItem("token");
+
+                localStorage.removeItem("user");
+
+
+                window.location.href="/login";
+
+
+            }
+
 
 
         }
@@ -87,8 +144,11 @@ API.interceptors.response.use(
 
 
             console.log(
+
                 "NETWORK ERROR:",
+
                 error.message
+
             );
 
 
@@ -96,13 +156,17 @@ API.interceptors.response.use(
 
 
 
+
+
         return Promise.reject(error);
+
 
 
     }
 
 
 );
+
 
 
 
