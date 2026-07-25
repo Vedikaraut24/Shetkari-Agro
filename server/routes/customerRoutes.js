@@ -1,75 +1,84 @@
 import express from "express";
 
+
 import {
 
-getCustomers,
-createCustomer,
-updateCustomer,
-deleteCustomer,
-searchCustomers
+    getCustomers,
+    createCustomer,
+    updateCustomer,
+    deleteCustomer,
+    searchCustomers
 
-}
-from "../controllers/customerController.js";
+} from "../controllers/customerController.js";
+
+
+import authMiddleware from "../middleware/authMiddleware.js";
+
 
 
 const router = express.Router();
 
 
 
-// Search customer
+router.use(authMiddleware);
+
+
+
+// GET ALL CUSTOMERS
+
 router.get(
 
-"/search",
+    "/",
 
-searchCustomers
+    getCustomers
 
 );
 
 
 
-// Get all
+// SEARCH CUSTOMERS
 
 router.get(
 
-"/",
+    "/search",
 
-getCustomers
+    searchCustomers
 
 );
 
 
 
-// Create
+// CREATE CUSTOMER
 
 router.post(
 
-"/",
+    "/",
 
-createCustomer
+    createCustomer
 
 );
 
 
 
-// Update
+// UPDATE CUSTOMER
 
 router.put(
 
-"/:id",
+    "/:id",
 
-updateCustomer
+    updateCustomer
 
 );
 
 
 
-// Delete
+// DELETE CUSTOMER
 
 router.delete(
 
-"/:id",
+    "/:id",
 
-deleteCustomer
+    deleteCustomer
 
 );
 
