@@ -7,111 +7,102 @@ import Customer from "../models/Customer.js";
 export const getReports = async(req,res)=>{
 
 
-try{
+    try{
 
 
-const totalProducts =
-await Product.countDocuments();
+        const totalProducts =
+        await Product.countDocuments();
 
 
 
-const totalCustomers =
-await Customer.countDocuments();
+        const totalCustomers =
+        await Customer.countDocuments();
 
 
 
-const totalBills =
-await Bill.countDocuments();
+        const totalBills =
+        await Bill.countDocuments();
 
 
 
 
 
-// SALES
+        const sales =
+        await Bill.aggregate([
 
-const sales =
-await Bill.aggregate([
+            {
+                $group:{
+                    _id:null,
+                    total:{
+                        $sum:"$grandTotal"
+                    }
+                }
+            }
 
-{
-$group:{
-_id:null,
-total:{
-$sum:{
-$ifNull:[
-"$grandTotal",
-0
-]
-}
-}
-}
-}
+        ]);
 
-]);
 
 
+        const totalSales =
+        sales.length > 0
+        ?
+        sales[0].total
+        :
+        0;
 
-const totalSales =
-sales[0]?.total || 0;
 
 
 
 
 
 
+        const inventory =
+        await Product.aggregate([
 
-// INVENTORY VALUE
 
-const inventory =
-await Product.aggregate([
+            {
+                $project:{
 
-{
-$project:{
+                    value:{
 
-value:{
+                        $multiply:[
 
-$multiply:[
+                            "$purchasePrice",
+                            "$currentStock"
 
-{
-$ifNull:[
-"$purchasePrice",
-0
-]
-},
+                        ]
 
-{
-$ifNull:[
-"$currentStock",
-0
-]
-}
+                    }
 
-]
+                }
 
-}
+            },
 
-}
 
-},
+            {
+                $group:{
 
-{
-$group:{
+                    _id:null,
 
-_id:null,
+                    total:{
+                        $sum:"$value"
+                    }
 
-total:{
-$sum:"$value"
-}
+                }
 
-}
+            }
 
-}
 
-]);
+        ]);
 
 
 
-const inventoryValue =
-inventory[0]?.total || 0;
+        const inventoryValue =
+        inventory.length > 0
+        ?
+        inventory[0].total
+        :
+        0;
 
 
 
@@ -119,296 +110,96 @@ inventory[0]?.total || 0;
 
 
 
-// MONTHLY SALES
+        const lowStockProducts =
+        await Product.find({
 
+            $expr:{
 
-const monthlySales =
-await Bill.aggregate([
+                $lte:[
 
+                    "$currentStock",
+                    "$minimumStock"
 
-{
-$group:{
+                ]
 
-_id:{
+            }
 
-month:{
-$month:"$createdAt"
-}
+        });
 
-},
 
-sales:{
 
-$sum:{
-$ifNull:[
-"$grandTotal",
-0
-]
-}
 
-}
 
-}
 
-},
+        const recentBills =
+        await Bill.find()
 
+        .populate(
+            "customer"
+        )
 
+        .sort({
 
-{
-$sort:{
-"_id.month":1
-}
-}
+            createdAt:-1
 
+        })
 
-]);
+        .limit(5);
 
 
 
 
-const monthNames=[
 
-"January",
-"February",
-"March",
-"April",
-"May",
-"June",
-"July",
-"August",
-"September",
-"October",
-"November",
-"December"
 
-];
 
+        res.status(200).json({
 
 
-const formattedMonthlySales =
-monthlySales.map(item=>({
+            totalProducts,
 
-month:
-monthNames[item._id.month-1],
 
-sales:item.sales
+            totalCustomers,
 
 
-}));
+            totalBills,
 
 
+            totalSales,
 
 
+            inventoryValue,
 
 
+            lowStockProducts,
 
 
+            recentBills
 
-// CATEGORY REPORT
 
+        });
 
-const categoryChart =
-await Product.aggregate([
 
 
-{
-$group:{
+    }
 
-_id:"$category",
 
-value:{
-$sum:1
-}
+    catch(error){
 
-}
 
-}
+        console.log(
+            "REPORT ERROR:",
+            error.message
+        );
 
-]);
 
+        res.status(500).json({
 
+            message:error.message
 
+        });
 
 
-const formattedCategory =
-categoryChart.map(item=>({
-
-category:item._id || "Other",
-
-value:item.value
-
-
-}));
-
-
-
-
-
-
-
-
-
-// TOP PRODUCTS
-
-
-const topProducts =
-await Bill.aggregate([
-
-
-{
-$unwind:"$items"
-},
-
-
-{
-$group:{
-
-
-_id:"$items.productName",
-
-
-quantity:{
-$sum:"$items.quantity"
-}
-
-
-}
-
-},
-
-
-
-{
-$sort:{
-quantity:-1
-}
-},
-
-
-{
-$limit:5
-}
-
-
-]);
-
-
-
-
-
-
-
-
-// LOW STOCK
-
-
-const lowStockProducts =
-await Product.find({
-
-$expr:{
-
-$lte:[
-
-"$currentStock",
-
-"$minimumStock"
-
-]
-
-}
-
-});
-
-
-
-
-
-
-
-
-
-// RECENT BILLS
-
-
-const recentBills =
-await Bill.find()
-
-.populate("customer")
-
-.sort({
-
-createdAt:-1
-
-})
-
-.limit(5);
-
-
-
-
-
-
-
-
-res.status(200).json({
-
-success:true,
-
-
-
-totalProducts,
-
-totalCustomers,
-
-totalBills,
-
-totalSales,
-
-inventoryValue,
-
-
-monthlySales:
-formattedMonthlySales,
-
-
-categoryChart:
-formattedCategory,
-
-
-topProducts,
-
-
-lowStockProducts,
-
-
-recentBills
-
-
-});
-
-
-
-}
-
-catch(error){
-
-
-console.log(
-"REPORT ERROR:",
-error
-);
-
-
-res.status(500).json({
-
-success:false,
-
-message:error.message
-
-});
-
-
-}
+    }
 
 
 };

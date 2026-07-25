@@ -29,7 +29,6 @@ const app = express();
 
 
 
-
 // ===============================
 // CORS CONFIGURATION
 // ===============================
@@ -37,15 +36,25 @@ const app = express();
 
 const allowedOrigins = [
 
+
     "http://localhost:5173",
+
 
     "https://shetkari-agro.vercel.app",
 
+
+    "https://shetkari-agro-bj06ci0ea-vedika9.vercel.app",
+
+
     "https://shetkari-agro-kx0h3vip4-vedika9.vercel.app",
 
-    "https://shetkari-agro-kx0h3vip4-vedika9.vercel.app"
+
+    "https://shetkari-agro-6y8egshqd-vedika9.vercel.app"
+
 
 ];
+
+
 
 
 
@@ -53,10 +62,10 @@ app.use(
 
     cors({
 
-        origin:function(origin,callback){
+        origin:(origin,callback)=>{
 
 
-            // allow server requests
+            // allow postman/mobile apps
 
             if(!origin){
 
@@ -67,7 +76,9 @@ app.use(
 
 
             if(
+
                 allowedOrigins.includes(origin)
+
             ){
 
                 return callback(null,true);
@@ -76,9 +87,16 @@ app.use(
 
 
 
-            return callback(
-                new Error("Not allowed by CORS")
+            console.log(
+
+                "Blocked CORS Origin:",
+
+                origin
+
             );
+
+
+            return callback(null,false);
 
 
         },
@@ -93,8 +111,7 @@ app.use(
             "POST",
             "PUT",
             "DELETE",
-            "PATCH",
-            "OPTIONS"
+            "PATCH"
 
         ],
 
@@ -114,28 +131,20 @@ app.use(
 
 
 
-// Express 5 compatible OPTIONS
-
-app.options(
-
-    "/{*any}",
-
-    cors()
-
-);
-
-
 
 
 
 // ===============================
-// BODY PARSER
+// MIDDLEWARE
 // ===============================
 
 
 app.use(
+
     express.json()
+
 );
+
 
 
 app.use(
@@ -150,12 +159,6 @@ app.use(
 
 
 
-
-// ===============================
-// SECURITY + LOGGING
-// ===============================
-
-
 app.use(
 
     helmet({
@@ -167,9 +170,13 @@ app.use(
 );
 
 
+
 app.use(
+
     morgan("dev")
+
 );
+
 
 
 
@@ -181,19 +188,28 @@ app.use(
 // ===============================
 
 
-app.get("/",(req,res)=>{
+app.get(
+
+    "/",
+
+    (req,res)=>{
 
 
-    res.json({
+        res.status(200).json({
 
-        success:true,
+            success:true,
 
-        message:"Shetkari Agro API Running"
+            message:
+            "Shetkari Agro API Running"
 
-    });
+        });
 
 
-});
+    }
+
+);
+
+
 
 
 
@@ -203,6 +219,7 @@ app.get("/",(req,res)=>{
 // ===============================
 // API ROUTES
 // ===============================
+
 
 
 app.use(
@@ -289,6 +306,7 @@ app.use(
 
 
 
+
 // ===============================
 // ERROR HANDLER
 // ===============================
@@ -296,27 +314,32 @@ app.use(
 
 app.use(
 
-(err,req,res,next)=>{
+    (err,req,res,next)=>{
 
 
-    console.log(
-        "SERVER ERROR:",
-        err.message
-    );
+        console.log(
+
+            "SERVER ERROR:",
+
+            err.message
+
+        );
 
 
-    res.status(500).json({
+        res.status(500).json({
 
-        success:false,
+            success:false,
 
-        message:err.message
+            message:err.message
 
-    });
+        });
 
 
-}
+    }
 
 );
+
+
 
 
 
@@ -338,7 +361,9 @@ mongoose.connect(
 
 
     console.log(
+
         "MongoDB Connected"
+
     );
 
 
@@ -349,13 +374,16 @@ mongoose.connect(
 
     console.log(
 
-        "MongoDB Error:",
+        "MongoDB ERROR:",
+
         error.message
 
     );
 
 
 });
+
+
 
 
 
