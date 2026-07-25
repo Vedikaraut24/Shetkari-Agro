@@ -6,20 +6,15 @@ import helmet from "helmet";
 import morgan from "morgan";
 
 
-// Routes
-
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
 import billRoutes from "./routes/billRoutes.js";
-import transactionRoutes from "./routes/transactionRoutes.js";
-import reportRoutes from "./routes/reportRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
+import transactionRoutes from "./routes/transactionRoutes.js";
 
 
-
-// Environment
 
 dotenv.config();
 
@@ -33,122 +28,101 @@ const app = express();
 // CORS
 // =======================
 
-app.use(
-    cors({
 
-        origin:true,
-
-        credentials:true
-
-    })
-);
+const allowedOrigins=[
 
 
-
-// =======================
-// Middleware
-// =======================
+    "http://localhost:5173",
 
 
-app.use(
-    helmet({
-        crossOriginResourcePolicy:false
-    })
-);
+    "https://shetkari-agro-5vhb-lqo00nje4-vedika9.vercel.app"
 
 
-app.use(
-    morgan("dev")
-);
-
-
-app.use(
-    express.json()
-);
+];
 
 
 
+app.use(cors({
+
+    origin:function(origin,callback){
 
 
-// =======================
-// Routes
-// =======================
+        if(!origin){
+
+            return callback(null,true);
+
+        }
 
 
-app.use(
-    "/api/auth",
-    authRoutes
-);
+
+        if(allowedOrigins.includes(origin)){
 
 
-app.use(
-    "/api/products",
-    productRoutes
-);
+            return callback(null,true);
 
 
-app.use(
-    "/api/categories",
-    categoryRoutes
-);
+        }
 
 
-app.use(
-    "/api/customers",
-    customerRoutes
-);
+        return callback(
+            new Error("Not allowed by CORS")
+        );
 
 
-app.use(
-    "/api/bills",
-    billRoutes
-);
+    },
+
+    credentials:true
+
+}));
 
 
-app.use(
-    "/api/transactions",
-    transactionRoutes
-);
 
 
-app.use(
-    "/api/reports",
-    reportRoutes
-);
+
+app.use(express.json());
+
+app.use(express.urlencoded({
+
+    extended:true
+
+}));
 
 
-app.use(
-    "/api/dashboard",
-    dashboardRoutes
-);
 
+app.use(helmet());
+
+app.use(morgan("dev"));
 
 
 
 
 
 // =======================
-// Health Check
+// DATABASE
 // =======================
 
 
-app.get(
-    "/",
-    (req,res)=>{
+mongoose.connect(
 
+process.env.MONGO_URI
 
-        res.status(200).json({
+)
 
-            success:true,
+.then(()=>{
 
-            message:
-            "Shetkari Agro API Running"
+console.log("MongoDB Connected");
 
-        });
+})
 
+.catch((error)=>{
 
-    }
+console.log(
+"MongoDB Error",
+error
 );
+
+});
+
 
 
 
@@ -156,38 +130,92 @@ app.get(
 
 
 // =======================
-// Error Handler
+// ROUTES
 // =======================
 
 
 app.use(
-    (err,req,res,next)=>{
+"/api/auth",
+authRoutes
+);
 
 
-        console.log(err);
+app.use(
+"/api/products",
+productRoutes
+);
 
 
-        res.status(500).json({
-
-            success:false,
-
-            message:
-            "Server Error"
-
-        });
+app.use(
+"/api/categories",
+categoryRoutes
+);
 
 
-    }
+app.use(
+"/api/customers",
+customerRoutes
+);
+
+
+app.use(
+"/api/bills",
+billRoutes
+);
+
+
+app.use(
+"/api/dashboard",
+dashboardRoutes
+);
+
+
+app.use(
+"/api/transactions",
+transactionRoutes
 );
 
 
 
 
 
+app.get("/",(req,res)=>{
 
-// =======================
-// MongoDB
-// =======================
+
+res.json({
+
+message:"Shetkari Agro API Running"
+
+});
+
+
+});
+
+
+
+
+
+// error handler
+
+app.use((err,req,res,next)=>{
+
+
+console.log(err);
+
+
+res.status(500).json({
+
+message:
+err.message ||
+"Server Error"
+
+});
+
+
+});
+
+
+
 
 
 const PORT =
@@ -195,42 +223,14 @@ process.env.PORT || 5000;
 
 
 
-mongoose
-.connect(
-    process.env.MONGO_URI
-)
-
-.then(()=>{
+app.listen(PORT,()=>{
 
 
-    console.log(
-        "MongoDB Connected"
-    );
+console.log(
 
+`Server running on ${PORT}`
 
-    app.listen(
-        PORT,
-        ()=>{
-
-
-            console.log(
-                `Server running on port ${PORT}`
-            );
-
-
-        }
-    );
-
-
-})
-
-.catch((error)=>{
-
-
-    console.log(
-        "MongoDB Error:",
-        error
-    );
+);
 
 
 });
