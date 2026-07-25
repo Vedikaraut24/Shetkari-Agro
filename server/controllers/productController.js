@@ -1,30 +1,20 @@
 import Product from "../models/Product.js";
 import Category from "../models/Category.js";
 
+import fs from "fs";
+import csv from "csv-parser";
+import XLSX from "xlsx";
 
 
 
-// ============================
+// =====================================
 // CREATE PRODUCT
-// ============================
+// =====================================
 
 export const createProduct = async(req,res)=>{
 
 
     try{
-
-
-        console.log(
-            "USER:",
-            req.user
-        );
-
-
-        console.log(
-            "PRODUCT DATA:",
-            req.body
-        );
-
 
 
         const {
@@ -46,7 +36,6 @@ export const createProduct = async(req,res)=>{
 
 
 
-
         if(!productName || !category){
 
 
@@ -54,16 +43,12 @@ export const createProduct = async(req,res)=>{
 
                 success:false,
 
-                message:
-                "Product name and category required"
+                message:"Product name and category required"
 
             });
 
 
         }
-
-
-
 
 
 
@@ -73,10 +58,9 @@ export const createProduct = async(req,res)=>{
         const categoryExists =
         await Category.findOne({
 
-            name:category
+            name:category.trim()
 
         });
-
 
 
 
@@ -85,13 +69,12 @@ export const createProduct = async(req,res)=>{
 
             await Category.create({
 
-                name:category
+                name:category.trim()
 
             });
 
 
         }
-
 
 
 
@@ -102,37 +85,39 @@ export const createProduct = async(req,res)=>{
         await Product.create({
 
 
-            productName,
+            productName:productName.trim(),
 
-
-            category,
-
+            category:category.trim(),
 
             brand:brand || "",
 
 
-            purchasePrice:
-            Number(purchasePrice),
+            purchasePrice:Number(
+                purchasePrice
+            ),
 
 
-            sellingPrice:
-            Number(sellingPrice),
+            sellingPrice:Number(
+                sellingPrice
+            ),
 
 
-            gst:
-            Number(gst || 0),
+            gst:Number(
+                gst || 0
+            ),
 
 
-            currentStock:
-            Number(currentStock || 0),
+            currentStock:Number(
+                currentStock || 0
+            ),
 
 
-            minimumStock:
-            Number(minimumStock || 5),
+            minimumStock:Number(
+                minimumStock || 5
+            ),
 
 
-            unit:
-            unit || "packet",
+            unit:unit || "packet",
 
 
             expiryDate:
@@ -149,19 +134,13 @@ export const createProduct = async(req,res)=>{
 
 
 
-
-        return res.status(201).json({
-
+        res.status(201).json({
 
             success:true,
 
-
-            message:
-            "Product Added Successfully",
-
+            message:"Product Added Successfully",
 
             product
-
 
         });
 
@@ -172,15 +151,14 @@ export const createProduct = async(req,res)=>{
     catch(error){
 
 
-
         console.log(
             "CREATE PRODUCT ERROR:",
-            error.message
+            error
         );
 
 
 
-        return res.status(500).json({
+        res.status(500).json({
 
             success:false,
 
@@ -189,9 +167,7 @@ export const createProduct = async(req,res)=>{
         });
 
 
-
     }
-
 
 
 };
@@ -202,9 +178,10 @@ export const createProduct = async(req,res)=>{
 
 
 
-// ============================
+// =====================================
 // GET ALL PRODUCTS
-// ============================
+// =====================================
+
 
 export const getProducts = async(req,res)=>{
 
@@ -223,77 +200,7 @@ export const getProducts = async(req,res)=>{
 
 
 
-
-        res.json(products);
-
-
-
-    }
-
-    catch(error){
-
-
-        res.status(500).json({
-
-            success:false,
-
-            message:error.message
-
-        });
-
-
-    }
-
-
-};
-
-
-
-
-
-
-
-
-// ============================
-// GET PRODUCT BY ID
-// ============================
-
-export const getProductById = async(req,res)=>{
-
-
-    try{
-
-
-        const product =
-        await Product.findById(
-
-            req.params.id
-
-        );
-
-
-
-
-        if(!product){
-
-
-            return res.status(404).json({
-
-                success:false,
-
-                message:
-                "Product not found"
-
-            });
-
-
-        }
-
-
-
-
-
-        res.json(product);
+        res.status(200).json(products);
 
 
 
@@ -324,232 +231,10 @@ export const getProductById = async(req,res)=>{
 
 
 
-// ============================
-// UPDATE PRODUCT
-// ============================
+// =====================================
+// SEARCH PRODUCTS FOR BILLING
+// =====================================
 
-export const updateProduct = async(req,res)=>{
-
-
-    try{
-
-
-        const product =
-        await Product.findById(
-
-            req.params.id
-
-        );
-
-
-
-
-        if(!product){
-
-
-            return res.status(404).json({
-
-                success:false,
-
-                message:
-                "Product not found"
-
-            });
-
-
-        }
-
-
-
-
-
-
-        const updated =
-        await Product.findByIdAndUpdate(
-
-
-            req.params.id,
-
-
-            {
-
-
-                ...req.body,
-
-
-                purchasePrice:
-                Number(req.body.purchasePrice),
-
-
-                sellingPrice:
-                Number(req.body.sellingPrice),
-
-
-                gst:
-                Number(req.body.gst || 0),
-
-
-                currentStock:
-                Number(req.body.currentStock || 0),
-
-
-                minimumStock:
-                Number(req.body.minimumStock || 5)
-
-
-
-            },
-
-
-            {
-
-
-                new:true,
-
-
-                runValidators:true
-
-
-            }
-
-
-        );
-
-
-
-
-
-
-
-        res.json({
-
-
-            success:true,
-
-
-            message:
-            "Product Updated",
-
-
-            product:updated
-
-
-
-        });
-
-
-
-    }
-
-    catch(error){
-
-
-        res.status(500).json({
-
-            success:false,
-
-            message:error.message
-
-        });
-
-
-    }
-
-
-};
-
-
-
-
-
-
-
-
-
-// ============================
-// DELETE PRODUCT
-// ============================
-
-export const deleteProduct = async(req,res)=>{
-
-
-    try{
-
-
-        const product =
-        await Product.findByIdAndDelete(
-
-            req.params.id
-
-        );
-
-
-
-
-        if(!product){
-
-
-            return res.status(404).json({
-
-                success:false,
-
-                message:
-                "Product not found"
-
-            });
-
-
-        }
-
-
-
-
-
-
-        res.json({
-
-
-            success:true,
-
-
-            message:
-            "Product deleted"
-
-
-
-        });
-
-
-
-
-    }
-
-    catch(error){
-
-
-        res.status(500).json({
-
-            success:false,
-
-            message:error.message
-
-        });
-
-
-    }
-
-
-};
-
-
-
-
-
-
-
-// ============================
-// SEARCH PRODUCTS
-// ============================
 
 export const searchProducts = async(req,res)=>{
 
@@ -559,6 +244,18 @@ export const searchProducts = async(req,res)=>{
 
         const keyword =
         req.query.keyword || "";
+
+
+
+        if(!keyword.trim()){
+
+
+            return res.json([]);
+
+
+        }
+
+
 
 
 
@@ -610,12 +307,21 @@ export const searchProducts = async(req,res)=>{
             ]
 
 
+        })
+
+        .limit(10)
+
+        .sort({
+
+            productName:1
+
         });
 
 
 
 
-        res.json(products);
+
+        res.status(200).json(products);
 
 
 
@@ -624,7 +330,16 @@ export const searchProducts = async(req,res)=>{
     catch(error){
 
 
+        console.log(
+            "SEARCH ERROR:",
+            error
+        );
+
+
+
         res.status(500).json({
+
+            success:false,
 
             message:error.message
 
@@ -642,21 +357,500 @@ export const searchProducts = async(req,res)=>{
 
 
 
-// ============================
-// IMPORT PLACEHOLDER
-// ============================
+
+
+// =====================================
+// GET PRODUCT BY ID
+// =====================================
+
+
+export const getProductById = async(req,res)=>{
+
+
+    try{
+
+
+        const product =
+        await Product.findById(
+
+            req.params.id
+
+        );
+
+
+
+        if(!product){
+
+
+            return res.status(404).json({
+
+                success:false,
+
+                message:"Product not found"
+
+            });
+
+
+        }
+
+
+
+
+        res.json(product);
+
+
+
+    }
+
+    catch(error){
+
+
+        res.status(500).json({
+
+            success:false,
+
+            message:error.message
+
+        });
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+
+
+// =====================================
+// UPDATE PRODUCT
+// =====================================
+
+
+export const updateProduct = async(req,res)=>{
+
+
+    try{
+
+
+        if(req.body.category){
+
+
+            const exists =
+            await Category.findOne({
+
+                name:req.body.category
+
+            });
+
+
+
+            if(!exists){
+
+
+                await Category.create({
+
+                    name:req.body.category
+
+                });
+
+
+            }
+
+
+        }
+
+
+
+
+
+        const product =
+        await Product.findByIdAndUpdate(
+
+
+            req.params.id,
+
+
+            req.body,
+
+
+            {
+
+                new:true,
+
+                runValidators:true
+
+            }
+
+
+        );
+
+
+
+
+
+        if(!product){
+
+
+            return res.status(404).json({
+
+                success:false,
+
+                message:"Product not found"
+
+            });
+
+
+        }
+
+
+
+
+
+        res.json({
+
+            success:true,
+
+            message:"Product updated",
+
+            product
+
+        });
+
+
+
+    }
+
+    catch(error){
+
+
+        res.status(500).json({
+
+            success:false,
+
+            message:error.message
+
+        });
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+
+
+// =====================================
+// DELETE PRODUCT
+// =====================================
+
+
+export const deleteProduct = async(req,res)=>{
+
+
+    try{
+
+
+        const product =
+        await Product.findByIdAndDelete(
+
+            req.params.id
+
+        );
+
+
+
+        if(!product){
+
+
+            return res.status(404).json({
+
+                success:false,
+
+                message:"Product not found"
+
+            });
+
+
+        }
+
+
+
+
+        res.json({
+
+            success:true,
+
+            message:"Product deleted"
+
+        });
+
+
+
+    }
+
+    catch(error){
+
+
+        res.status(500).json({
+
+            success:false,
+
+            message:error.message
+
+        });
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+
+
+// =====================================
+// IMPORT CSV / EXCEL
+// =====================================
+
 
 export const importProducts = async(req,res)=>{
 
 
-    return res.status(501).json({
+    try{
 
-        success:false,
 
-        message:
-        "Import feature not enabled"
+        if(!req.file){
 
-    });
+
+            return res.status(400).json({
+
+                success:false,
+
+                message:"File required"
+
+            });
+
+
+        }
+
+
+
+
+
+        let data=[];
+
+
+
+
+        if(req.file.originalname.endsWith(".csv")){
+
+
+            data =
+            await new Promise((resolve,reject)=>{
+
+
+                const rows=[];
+
+
+                fs.createReadStream(
+                    req.file.path
+                )
+
+                .pipe(csv())
+
+                .on(
+                    "data",
+                    row=>rows.push(row)
+                )
+
+                .on(
+                    "end",
+                    ()=>resolve(rows)
+                )
+
+                .on(
+                    "error",
+                    reject
+                );
+
+
+            });
+
+
+        }
+
+        else{
+
+
+            const workbook =
+            XLSX.readFile(
+
+                req.file.path
+
+            );
+
+
+            const sheet =
+            workbook.Sheets[
+
+                workbook.SheetNames[0]
+
+            ];
+
+
+            data =
+            XLSX.utils.sheet_to_json(sheet);
+
+
+        }
+
+
+
+
+
+        let count=0;
+
+
+
+
+        for(const item of data){
+
+
+            if(item.category){
+
+
+                const exists =
+                await Category.findOne({
+
+                    name:item.category
+
+                });
+
+
+
+                if(!exists){
+
+
+                    await Category.create({
+
+                        name:item.category
+
+                    });
+
+
+                }
+
+
+            }
+
+
+
+
+
+
+            await Product.create({
+
+                productName:item.productName,
+
+                category:item.category,
+
+                brand:item.brand || "",
+
+                purchasePrice:Number(
+                    item.purchasePrice || 0
+                ),
+
+                sellingPrice:Number(
+                    item.sellingPrice || 0
+                ),
+
+                gst:Number(
+                    item.gst || 0
+                ),
+
+                currentStock:Number(
+                    item.currentStock || 0
+                ),
+
+                minimumStock:Number(
+                    item.minimumStock || 5
+                ),
+
+                unit:item.unit || "packet"
+
+
+            });
+
+
+
+            count++;
+
+
+        }
+
+
+
+
+        fs.unlinkSync(
+
+            req.file.path
+
+        );
+
+
+
+
+
+        res.json({
+
+            success:true,
+
+            message:"Import completed",
+
+            inserted:count
+
+        });
+
+
+
+    }
+
+    catch(error){
+
+
+        console.log(
+            "IMPORT ERROR:",
+            error
+        );
+
+
+        res.status(500).json({
+
+            success:false,
+
+            message:error.message
+
+        });
+
+
+    }
 
 
 };

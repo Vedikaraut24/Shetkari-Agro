@@ -17,6 +17,7 @@ import customerRoutes from "./routes/customerRoutes.js";
 import billRoutes from "./routes/billRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
+import reportRoutes from "./routes/reportRoutes.js";
 
 
 
@@ -30,55 +31,96 @@ const app = express();
 
 
 // ===============================
-// CORS FIX
+// CORS CONFIGURATION
 // ===============================
 
 
-const corsOptions = {
+const allowedOrigins = [
 
+    "http://localhost:5173",
 
-    origin:true,
+    "https://shetkari-agro.vercel.app",
 
+    "https://shetkari-agro-kx0h3vip4-vedika9.vercel.app",
 
-    credentials:true,
+    "https://shetkari-agro-kx0h3vip4-vedika9.vercel.app"
 
-
-    methods:[
-
-        "GET",
-        "POST",
-        "PUT",
-        "DELETE",
-        "PATCH",
-        "OPTIONS"
-
-    ],
-
-
-    allowedHeaders:[
-
-        "Content-Type",
-
-        "Authorization"
-
-    ]
-
-
-};
+];
 
 
 
-app.use(cors(corsOptions));
+app.use(
+
+    cors({
+
+        origin:function(origin,callback){
+
+
+            // allow server requests
+
+            if(!origin){
+
+                return callback(null,true);
+
+            }
 
 
 
-// Express 5 preflight support
+            if(
+                allowedOrigins.includes(origin)
+            ){
+
+                return callback(null,true);
+
+            }
+
+
+
+            return callback(
+                new Error("Not allowed by CORS")
+            );
+
+
+        },
+
+
+        credentials:true,
+
+
+        methods:[
+
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "PATCH",
+            "OPTIONS"
+
+        ],
+
+
+        allowedHeaders:[
+
+            "Content-Type",
+
+            "Authorization"
+
+        ]
+
+    })
+
+);
+
+
+
+
+// Express 5 compatible OPTIONS
 
 app.options(
 
     "/{*any}",
 
-    cors(corsOptions)
+    cors()
 
 );
 
@@ -86,18 +128,14 @@ app.options(
 
 
 
-
 // ===============================
-// MIDDLEWARE
+// BODY PARSER
 // ===============================
 
 
 app.use(
-
     express.json()
-
 );
-
 
 
 app.use(
@@ -112,6 +150,12 @@ app.use(
 
 
 
+
+// ===============================
+// SECURITY + LOGGING
+// ===============================
+
+
 app.use(
 
     helmet({
@@ -123,14 +167,9 @@ app.use(
 );
 
 
-
 app.use(
-
     morgan("dev")
-
 );
-
-
 
 
 
@@ -145,7 +184,7 @@ app.use(
 app.get("/",(req,res)=>{
 
 
-    res.status(200).json({
+    res.json({
 
         success:true,
 
@@ -155,9 +194,6 @@ app.get("/",(req,res)=>{
 
 
 });
-
-
-
 
 
 
@@ -239,6 +275,14 @@ app.use(
 
 
 
+app.use(
+
+    "/api/reports",
+
+    reportRoutes
+
+);
+
 
 
 
@@ -256,13 +300,9 @@ app.use(
 
 
     console.log(
-
-        "ERROR:",
-
+        "SERVER ERROR:",
         err.message
-
     );
-
 
 
     res.status(500).json({
@@ -283,11 +323,8 @@ app.use(
 
 
 
-
-
-
 // ===============================
-// DATABASE
+// DATABASE CONNECTION
 // ===============================
 
 
@@ -301,9 +338,7 @@ mongoose.connect(
 
 
     console.log(
-
         "MongoDB Connected"
-
     );
 
 
@@ -315,16 +350,12 @@ mongoose.connect(
     console.log(
 
         "MongoDB Error:",
-
         error.message
 
     );
 
 
 });
-
-
-
 
 
 

@@ -1,29 +1,38 @@
-import axios from "axios";
+import API from "./api";
 
-const API_URL = "http://localhost:5000/api";
 
 
 // =======================
 // SEARCH PRODUCTS
 // =======================
 
-export const searchProducts = async (keyword) => {
+export const searchProducts = async(keyword)=>{
 
-    const response = await axios.get(
 
-        `${API_URL}/products/search`,
+    const response = await API.get(
+
+        "/products/search",
 
         {
+
             params:{
+
                 keyword
+
             }
+
         }
 
     );
 
+
     return response.data;
 
+
 };
+
+
+
 
 
 
@@ -31,16 +40,20 @@ export const searchProducts = async (keyword) => {
 // CREATE BILL
 // =======================
 
-export const createBill = async (billData) => {
+export const createBill = async(billData)=>{
 
-    const response = await axios.post(
 
-        `${API_URL}/bills`,
+    const response =
+    await API.post(
+
+        "/bills",
 
         billData
 
     );
 
+
     return response.data;
+
 
 };

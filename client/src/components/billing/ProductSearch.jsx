@@ -1,82 +1,85 @@
-import { useEffect, useState } from "react";
-import { Search } from "lucide-react";
-import { searchProducts } from "../../services/billingService";
+import { useState } from "react";
+import { toast } from "react-toastify";
+
+import {
+    searchProducts
+} from "../../services/productService";
+
+
 
 export default function ProductSearch({
-
     items,
     setItems
-
 }) {
 
-    const [keyword, setKeyword] = useState("");
-
-    const [products, setProducts] = useState([]);
-
-    const [loading, setLoading] = useState(false);
 
 
+    const [keyword,setKeyword] = useState("");
 
-    useEffect(() => {
-
-
-        const fetchProducts = async () => {
-
-
-            if (!keyword.trim()) {
-
-                setProducts([]);
-
-                return;
-
-            }
-
-
-            try {
-
-                setLoading(true);
-
-
-                const data = await searchProducts(keyword);
-
-
-                setProducts(data);
-
-
-            }
-
-            catch(error){
-
-                console.log(error);
-
-            }
-
-            finally{
-
-                setLoading(false);
-
-            }
-
-
-        };
+    const [suggestions,setSuggestions] = useState([]);
 
 
 
-        const timer = setTimeout(
-
-            fetchProducts,
-
-            300
-
-        );
 
 
+    const handleSearch = async(e)=>{
 
-        return () => clearTimeout(timer);
+
+        const value = e.target.value;
+
+
+        setKeyword(value);
 
 
 
-    },[keyword]);
+        if(value.trim().length < 2){
+
+
+            setSuggestions([]);
+
+            return;
+
+
+        }
+
+
+
+
+
+        try{
+
+
+            const data = await searchProducts(value);
+
+
+            setSuggestions(data);
+
+
+
+        }
+
+        catch(error){
+
+
+            console.log(
+                "SEARCH ERROR",
+                error
+            );
+
+
+            toast.error(
+                "Product search failed"
+            );
+
+
+        }
+
+
+
+    };
+
+
+
 
 
 
@@ -85,7 +88,7 @@ export default function ProductSearch({
     const addProduct = (product)=>{
 
 
-        const exists = items.find(
+        const alreadyAdded = items.find(
 
             item => item._id === product._id
 
@@ -93,17 +96,39 @@ export default function ProductSearch({
 
 
 
-        if(exists){
+        if(alreadyAdded){
 
-            alert(
 
+            toast.info(
                 "Product already added"
-
             );
+
 
             return;
 
+
         }
+
+
+
+
+
+        if(product.currentStock <= 0){
+
+
+            toast.error(
+                "Product out of stock"
+            );
+
+
+            return;
+
+
+        }
+
+
+
+
 
 
 
@@ -113,11 +138,25 @@ export default function ProductSearch({
 
             {
 
-                ...product,
+                _id:product._id,
 
-                quantity:1
+                productName:
+                product.productName,
+
+
+                sellingPrice:
+                product.sellingPrice,
+
+
+                quantity:1,
+
+
+                gst:
+                product.gst || 0
+
 
             }
+
 
         ]);
 
@@ -125,7 +164,7 @@ export default function ProductSearch({
 
         setKeyword("");
 
-        setProducts([]);
+        setSuggestions([]);
 
 
 
@@ -134,184 +173,122 @@ export default function ProductSearch({
 
 
 
-    return (
 
-        <div className="bg-white rounded-xl shadow-lg p-6 relative">
 
 
-            <h2 className="text-2xl font-bold text-green-700 mb-5">
+return (
 
-                Search Product
+<div className="relative">
 
-            </h2>
 
+<input
 
 
-            <div className="relative">
+type="text"
 
 
-                <Search
+value={keyword}
 
-                    size={20}
 
-                    className="absolute left-3 top-3 text-gray-500"
+onChange={handleSearch}
 
-                />
 
+placeholder="Search Product"
 
 
-                <input
+className="border p-3 rounded w-full"
 
 
-                    type="text"
 
+/>
 
-                    value={keyword}
 
 
-                    onChange={(e)=>
 
-                        setKeyword(e.target.value)
 
-                    }
 
+{
 
-                    placeholder="Search product name..."
+suggestions.length > 0 &&
 
 
-                    className="w-full border rounded-lg pl-10 pr-4 py-3 focus:ring-2 focus:ring-green-600"
+<div className="absolute z-20 bg-white shadow-lg w-full rounded mt-1">
 
-                />
 
 
+{
 
-            </div>
+suggestions.map(product=>(
 
 
+<div
 
 
+key={product._id}
 
-            {/* Dropdown */}
 
+onClick={()=>addProduct(product)}
 
-            {
 
-                products.length > 0 && (
 
+className="p-3 border-b cursor-pointer hover:bg-gray-100"
 
-                    <div className="absolute z-50 left-6 right-6 mt-2 bg-white border rounded-lg shadow-xl max-h-72 overflow-y-auto">
 
 
-                        {
+>
 
 
-                            products.map(product=>(
 
+<div className="font-semibold">
 
-                                <div
 
+{product.productName}
 
-                                    key={product._id}
 
+</div>
 
-                                    onClick={()=>addProduct(product)}
 
 
-                                    className="p-4 cursor-pointer hover:bg-green-100 border-b"
 
+<div className="text-sm text-gray-600">
 
 
-                                >
+Price:
+₹{product.sellingPrice}
 
 
-                                    <div className="flex justify-between">
+&nbsp; | &nbsp;
 
 
-                                        <div>
+Stock:
+{product.currentStock}
 
 
-                                            <p className="font-semibold text-gray-800">
 
-                                                {product.productName}
+</div>
 
-                                            </p>
 
 
-                                            <p className="text-sm text-gray-500">
+</div>
 
-                                                Category: {product.category}
 
-                                            </p>
+))
 
 
-                                        </div>
+}
 
 
 
+</div>
 
-                                        <div className="text-right">
 
+}
 
-                                            <p className="font-bold text-green-700">
 
-                                                ₹{product.sellingPrice}
 
-                                            </p>
+</div>
 
+);
 
-                                            <p className="text-sm">
-
-                                                Stock: {product.currentStock}
-
-                                            </p>
-
-
-                                        </div>
-
-
-
-                                    </div>
-
-
-
-                                </div>
-
-
-
-                            ))
-
-                        }
-
-
-                    </div>
-
-
-                )
-
-            }
-
-
-
-
-
-            {
-
-                loading && (
-
-                    <p className="text-gray-500 mt-3">
-
-                        Searching...
-
-                    </p>
-
-                )
-
-            }
-
-
-
-        </div>
-
-    );
 
 }
