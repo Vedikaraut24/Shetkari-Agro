@@ -90,9 +90,9 @@ console.log("All users:", allUsers);
 
     }
     catch(error){
-
+        console.log(error);
         res.status(500).json({
-
+             
             message:error.message
 
         });
