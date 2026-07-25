@@ -6,8 +6,6 @@ const API = axios.create({
     baseURL:
     "https://shetkari-agro.onrender.com/api",
 
-    timeout:30000,
-
     headers:{
         "Content-Type":"application/json"
     }
@@ -15,8 +13,6 @@ const API = axios.create({
 });
 
 
-
-// Attach JWT token automatically
 
 API.interceptors.request.use(
 
@@ -41,33 +37,6 @@ API.interceptors.request.use(
 },
 
 (error)=>{
-
-    return Promise.reject(error);
-
-}
-
-);
-
-
-
-// Handle expired token
-
-API.interceptors.response.use(
-
-(response)=>response,
-
-(error)=>{
-
-
-    if(error.response?.status===401){
-
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-
-        window.location.href="/login";
-
-    }
-
 
     return Promise.reject(error);
 

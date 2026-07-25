@@ -1,156 +1,61 @@
 import express from "express";
 
-
 import {
-
-    createProduct,
-    getProducts,
-    getProductById,
-    updateProduct,
-    deleteProduct,
-    importProducts,
-    searchProducts
-
+createProduct,
+getProducts,
+getProductById,
+updateProduct,
+deleteProduct,
+searchProducts
 }
 from "../controllers/productController.js";
 
-
-import upload from "../middleware/upload.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import roleMiddleware from "../middleware/roleMiddleware.js";
 
 
 const router = express.Router();
 
 
-
-console.log("Product routes loaded");
-
-
-
-// =====================
-// CSV / EXCEL IMPORT
-// =====================
-
-
-router.post(
-
-    "/import",
-
-    upload.single("file"),
-
-    (req,res,next)=>{
-
-        console.log("IMPORT REQUEST RECEIVED");
-
-        console.log(req.file);
-
-        next();
-
-    },
-
-    importProducts
-
+router.use(
+    authMiddleware,
+    roleMiddleware("admin")
 );
 
 
-
-
-// =====================
-// SEARCH PRODUCT
-// MUST BE ABOVE /:id
-// =====================
-
-
-router.get(
-
-    "/search",
-
-    searchProducts
-
-);
-
-
-
-
-
-// =====================
-// CREATE PRODUCT
-// =====================
-
-
 router.post(
-
     "/",
-
     createProduct
-
 );
 
 
-
-
-
-// =====================
-// GET ALL PRODUCTS
-// =====================
-
-
 router.get(
-
     "/",
-
     getProducts
-
 );
-
-
-
-
-
-// =====================
-// GET SINGLE PRODUCT
-// =====================
 
 
 router.get(
-
-    "/:id",
-
-    getProductById
-
+    "/search",
+    searchProducts
 );
 
 
-
-
-
-// =====================
-// UPDATE PRODUCT
-// =====================
+router.get(
+    "/:id",
+    getProductById
+);
 
 
 router.put(
-
     "/:id",
-
     updateProduct
-
 );
 
 
-
-
-
-// =====================
-// DELETE PRODUCT
-// =====================
-
-
 router.delete(
-
     "/:id",
-
     deleteProduct
-
 );
 
 

@@ -11,30 +11,60 @@ import XLSX from "xlsx";
 // CREATE PRODUCT
 // ===============================
 
-export const createProduct = async (req, res) => {
+export const createProduct = async(req,res)=>{
 
-    try {
 
-        const {
+    try{
 
-            category
 
-        } = req.body;
+        const productData = {
 
-        // Auto Create Category
-        if (category) {
+            productName:req.body.productName,
 
-            const exists = await Category.findOne({
+            category:req.body.category,
 
-                name: category
+            brand:req.body.brand || "",
+
+            purchasePrice:Number(req.body.purchasePrice || 0),
+
+            sellingPrice:Number(req.body.sellingPrice || 0),
+
+            gst:Number(req.body.gst || 0),
+
+            currentStock:Number(req.body.currentStock || 0),
+
+            minimumStock:Number(req.body.minimumStock || 5),
+
+            unit:req.body.unit || "packet",
+
+            expiryDate:req.body.expiryDate || null,
+
+            supplier:req.body.supplier || ""
+
+        };
+
+
+
+
+        // Create category automatically
+
+        if(productData.category){
+
+
+            const exists =
+            await Category.findOne({
+
+                name:productData.category
 
             });
 
-            if (!exists) {
+
+
+            if(!exists){
 
                 await Category.create({
 
-                    name: category
+                    name:productData.category
 
                 });
 
@@ -42,112 +72,337 @@ export const createProduct = async (req, res) => {
 
         }
 
-        const product = await Product.create(req.body);
+
+
+
+        const product =
+        await Product.create(productData);
+
+
 
         res.status(201).json({
 
-            message: "Product Added",
+            success:true,
+
+            message:"Product Added",
 
             product
 
         });
 
+
+
     }
 
-    catch (error) {
+    catch(error){
 
-        console.log(error);
+
+        console.log(
+            "Create Product Error:",
+            error
+        );
+
+
 
         res.status(500).json({
 
-            message: error.message
+            success:false,
+
+            message:error.message
 
         });
 
+
     }
+
 
 };
 
 
 
+
+
+
+
 // ===============================
-// GET ALL PRODUCTS
+// GET PRODUCTS
 // ===============================
 
-export const getProducts = async (req, res) => {
 
-    try {
+export const getProducts = async(req,res)=>{
 
-        const products = await Product.find().sort({
 
-            createdAt: -1
+    try{
+
+
+        const products =
+        await Product.find()
+
+        .sort({
+
+            createdAt:-1
 
         });
+
+
 
         res.json(products);
 
+
     }
 
-    catch (error) {
+    catch(error){
+
 
         res.status(500).json({
 
-            message: error.message
+            message:error.message
 
         });
 
+
     }
+
 
 };
 
 
 
+
+
+
+
+
 // ===============================
-// SEARCH PRODUCTS
-// GET /api/products/search?keyword=abc
+// GET SINGLE PRODUCT
 // ===============================
 
-export const searchProducts = async (req, res) => {
 
-    try {
+export const getProductById = async(req,res)=>{
 
-        const keyword = req.query.keyword || "";
 
-        const products = await Product.find({
+    try{
 
-            $or: [
+
+        const product =
+        await Product.findById(
+
+            req.params.id
+
+        );
+
+
+
+        if(!product){
+
+            return res.status(404).json({
+
+                message:"Product not found"
+
+            });
+
+        }
+
+
+
+        res.json(product);
+
+
+
+    }
+
+    catch(error){
+
+
+        res.status(500).json({
+
+            message:error.message
+
+        });
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+
+// ===============================
+// UPDATE PRODUCT
+// ===============================
+
+
+export const updateProduct = async(req,res)=>{
+
+
+    try{
+
+
+        const product =
+        await Product.findByIdAndUpdate(
+
+            req.params.id,
+
+            req.body,
+
+            {
+
+                new:true,
+
+                runValidators:true
+
+            }
+
+        );
+
+
+
+        res.json({
+
+            success:true,
+
+            product
+
+        });
+
+
+
+    }
+
+    catch(error){
+
+
+        res.status(500).json({
+
+            message:error.message
+
+        });
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+
+// ===============================
+// DELETE PRODUCT
+// ===============================
+
+
+export const deleteProduct = async(req,res)=>{
+
+
+    try{
+
+
+        await Product.findByIdAndDelete(
+
+            req.params.id
+
+        );
+
+
+        res.json({
+
+            success:true,
+
+            message:"Product deleted"
+
+        });
+
+
+
+    }
+
+    catch(error){
+
+
+        res.status(500).json({
+
+            message:error.message
+
+        });
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+
+// ===============================
+// SEARCH PRODUCT
+// ===============================
+
+
+export const searchProducts = async(req,res)=>{
+
+
+    try{
+
+
+        const keyword =
+        req.query.keyword || "";
+
+
+
+        const products =
+        await Product.find({
+
+            $or:[
 
                 {
 
-                    productName: {
+                    productName:{
 
-                        $regex: keyword,
+                        $regex:keyword,
 
-                        $options: "i"
+                        $options:"i"
 
                     }
 
                 },
 
+
                 {
 
-                    category: {
+                    category:{
 
-                        $regex: keyword,
+                        $regex:keyword,
 
-                        $options: "i"
+                        $options:"i"
 
                     }
 
                 },
 
+
                 {
 
-                    brand: {
+                    brand:{
 
-                        $regex: keyword,
+                        $regex:keyword,
 
-                        $options: "i"
+                        $options:"i"
 
                     }
 
@@ -157,312 +412,211 @@ export const searchProducts = async (req, res) => {
 
         })
 
-            .limit(10)
+        .limit(10);
 
-            .sort({
 
-                productName: 1
-
-            });
 
         res.json(products);
 
+
+
     }
 
-    catch (error) {
+    catch(error){
+
 
         res.status(500).json({
 
-            message: error.message
+            message:error.message
 
         });
 
+
     }
+
 
 };
 
 
 
-// ===============================
-// GET PRODUCT BY ID
-// ===============================
 
-export const getProductById = async (req, res) => {
 
-    try {
-
-        const product = await Product.findById(
-
-            req.params.id
-
-        );
-
-        if (!product) {
-
-            return res.status(404).json({
-
-                message: "Product not found"
-
-            });
-
-        }
-
-        res.json(product);
-
-    }
-
-    catch (error) {
-
-        res.status(500).json({
-
-            message: error.message
-
-        });
-
-    }
-
-};
 
 
 
 // ===============================
-// UPDATE PRODUCT
+// IMPORT PRODUCTS
 // ===============================
 
-export const updateProduct = async (req, res) => {
 
-    try {
-
-        const {
-
-            category
-
-        } = req.body;
-
-        if (category) {
-
-            const exists = await Category.findOne({
-
-                name: category
-
-            });
-
-            if (!exists) {
-
-                await Category.create({
-
-                    name: category
-
-                });
-
-            }
-
-        }
-
-        const product = await Product.findByIdAndUpdate(
-
-            req.params.id,
-
-            req.body,
-
-            {
-
-                new: true,
-
-                runValidators: true
-
-            }
-
-        );
-
-        res.json(product);
-
-    }
-
-    catch (error) {
-
-        res.status(500).json({
-
-            message: error.message
-
-        });
-
-    }
-
-};
+export const importProducts = async(req,res)=>{
 
 
-
-// ===============================
-// DELETE PRODUCT
-// ===============================
-
-export const deleteProduct = async (req, res) => {
-
-    try {
-
-        await Product.findByIdAndDelete(
-
-            req.params.id
-
-        );
-
-        res.json({
-
-            message: "Deleted"
-
-        });
-
-    }
-
-    catch (error) {
-
-        res.status(500).json({
-
-            message: error.message
-
-        });
-
-    }
-
-};
+    try{
 
 
-
-// ===============================
-// IMPORT CSV / EXCEL
-// ===============================
-
-export const importProducts = async (req, res) => {
-
-    try {
-
-        if (!req.file) {
+        if(!req.file){
 
             return res.status(400).json({
 
-                message: "No file uploaded"
+                message:"No file uploaded"
 
             });
 
         }
 
-        let data = [];
 
-        if (req.file.originalname.endsWith(".csv")) {
 
-            data = await new Promise((resolve, reject) => {
+        let data=[];
 
-                const rows = [];
+
+
+        if(req.file.originalname.endsWith(".csv")){
+
+
+            data =
+            await new Promise((resolve,reject)=>{
+
+
+                const rows=[];
+
+
 
                 fs.createReadStream(req.file.path)
 
-                    .pipe(csv())
+                .pipe(csv())
 
-                    .on("data", (row) => rows.push(row))
+                .on(
 
-                    .on("end", () => resolve(rows))
+                    "data",
 
-                    .on("error", reject);
+                    row=>rows.push(row)
+
+                )
+
+                .on(
+
+                    "end",
+
+                    ()=>resolve(rows)
+
+                )
+
+                .on(
+
+                    "error",
+
+                    reject
+
+                );
+
 
             });
 
+
+
         }
 
-        else {
+        else{
 
-            const workbook = XLSX.readFile(
+
+            const workbook =
+            XLSX.readFile(
 
                 req.file.path
 
             );
 
-            const sheet = workbook.Sheets[
+
+            const sheet =
+            workbook.Sheets[
 
                 workbook.SheetNames[0]
 
             ];
 
-            data = XLSX.utils.sheet_to_json(sheet);
+
+
+            data =
+            XLSX.utils.sheet_to_json(sheet);
+
 
         }
 
-        let count = 0;
 
-        for (const item of data) {
 
-            if (item.category) {
 
-                const exists = await Category.findOne({
+        let count=0;
 
-                    name: item.category
 
-                });
 
-                if (!exists) {
+        for(const item of data){
 
-                    await Category.create({
-
-                        name: item.category
-
-                    });
-
-                }
-
-            }
 
             await Product.create({
 
-                productName: item.productName,
+                productName:item.productName,
 
-                category: item.category,
+                category:item.category,
 
-                brand: item.brand || "",
+                brand:item.brand || "",
 
-                purchasePrice: Number(item.purchasePrice),
+                purchasePrice:Number(item.purchasePrice || 0),
 
-                sellingPrice: Number(item.sellingPrice),
+                sellingPrice:Number(item.sellingPrice || 0),
 
-                gst: Number(item.gst || 0),
+                gst:Number(item.gst || 0),
 
-                currentStock: Number(item.currentStock || 0),
+                currentStock:Number(item.currentStock || 0),
 
-                minimumStock: Number(item.minimumStock || 5),
+                minimumStock:Number(item.minimumStock || 5),
 
-                unit: item.unit || "packet",
-
-                expiryDate: item.expiryDate || null,
-
-                supplier: item.supplier || ""
+                unit:item.unit || "packet"
 
             });
 
+
+
             count++;
+
 
         }
 
+
+
         fs.unlinkSync(req.file.path);
+
+
 
         res.json({
 
-            message: "Import completed",
+            success:true,
 
-            inserted: count
+            message:"Import completed",
+
+            inserted:count
 
         });
 
+
+
     }
 
-    catch (error) {
+    catch(error){
+
 
         console.log(error);
 
+
+
         res.status(500).json({
 
-            message: error.message
+            message:error.message
 
         });
 
+
     }
+
 
 };
