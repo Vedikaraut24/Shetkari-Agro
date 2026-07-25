@@ -6,7 +6,9 @@ import helmet from "helmet";
 import morgan from "morgan";
 
 
-// Routes
+// ===============================
+// ROUTES
+// ===============================
 
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
@@ -26,6 +28,7 @@ const app = express();
 
 
 
+
 // ===============================
 // CORS CONFIGURATION
 // ===============================
@@ -33,15 +36,16 @@ const app = express();
 
 const allowedOrigins = [
 
+    "http://localhost:5173",
+
     "https://shetkari-agro.vercel.app",
 
     "https://shetkari-agro-bj06ci0ea-vedika9.vercel.app",
 
-    "https://shetkari-agro-6y8egshqd-vedika9.vercel.app",
-
-    "http://localhost:5173"
+    "https://shetkari-agro-6y8egshqd-vedika9.vercel.app"
 
 ];
+
 
 
 
@@ -52,7 +56,7 @@ app.use(
         origin:(origin,callback)=>{
 
 
-            // Allow Postman/mobile apps
+            // Allow Postman/mobile requests
 
             if(!origin){
 
@@ -62,7 +66,11 @@ app.use(
 
 
 
-            if(allowedOrigins.includes(origin)){
+            if(
+
+                allowedOrigins.includes(origin)
+
+            ){
 
                 return callback(null,true);
 
@@ -70,11 +78,13 @@ app.use(
 
 
 
-            return callback(
-
-                new Error("CORS blocked")
-
+            console.log(
+                "Blocked CORS Origin:",
+                origin
             );
+
+
+            return callback(null,false);
 
 
         },
@@ -88,8 +98,8 @@ app.use(
             "GET",
             "POST",
             "PUT",
-            "PATCH",
             "DELETE",
+            "PATCH",
             "OPTIONS"
 
         ],
@@ -110,10 +120,23 @@ app.use(
 
 
 
+// Express 5 preflight fix
+
+app.options(
+
+    "/{*any}",
+
+    cors()
+
+);
+
+
+
+
 
 
 // ===============================
-// BODY PARSER
+// MIDDLEWARE
 // ===============================
 
 
@@ -137,15 +160,6 @@ app.use(
 
 
 
-
-
-
-
-// ===============================
-// SECURITY
-// ===============================
-
-
 app.use(
 
     helmet({
@@ -163,6 +177,7 @@ app.use(
     morgan("dev")
 
 );
+
 
 
 
@@ -278,11 +293,13 @@ app.use(
 
 
 // ===============================
-// ERROR HANDLER
+// GLOBAL ERROR HANDLER
 // ===============================
 
 
-app.use((err,req,res,next)=>{
+app.use(
+
+(err,req,res,next)=>{
 
 
     console.log(
@@ -294,6 +311,7 @@ app.use((err,req,res,next)=>{
     );
 
 
+
     res.status(500).json({
 
         success:false,
@@ -303,8 +321,8 @@ app.use((err,req,res,next)=>{
     });
 
 
-});
 
+});
 
 
 
@@ -341,7 +359,7 @@ mongoose.connect(
 
     console.log(
 
-        "MongoDB Error:",
+        "MongoDB Connection Error:",
 
         error.message
 
