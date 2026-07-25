@@ -1,635 +1,641 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-import ProductForm from "../components/products/ProductForm";
-import ProductTable from "../components/products/ProductTable";
-
 import {
-  getProducts,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-  importProducts
+    getProducts,
+    createProduct,
+    updateProduct,
+    deleteProduct
 } from "../services/productService";
-
 
 
 export default function Products(){
 
 
-const [products,setProducts]=useState([]);
+    const [products,setProducts] = useState([]);
 
-const [selectedProduct,setSelectedProduct]=useState(null);
 
-const [search,setSearch]=useState("");
+    const [form,setForm] = useState({
 
-const [category,setCategory]=useState("All");
+        productName:"",
+        category:"",
+        brand:"",
+        purchasePrice:"",
+        sellingPrice:"",
+        gst:"",
+        currentStock:"",
+        minimumStock:"",
+        unit:"packet"
 
-const [sort,setSort]=useState("latest");
+    });
 
-const [page,setPage]=useState(1);
 
-const [importFile,setImportFile]=useState(null);
 
+    const [editId,setEditId] = useState(null);
 
 
-const productsPerPage=5;
 
+    useEffect(()=>{
 
+        loadProducts();
 
-const loadProducts=async()=>{
+    },[]);
 
-try{
 
-const data=await getProducts();
 
-setProducts(data);
 
 
-}catch(error){
+    const loadProducts = async()=>{
 
-console.log(error);
 
-toast.error(
-"Failed to load products"
-);
+        try{
 
-}
 
-};
+            const data =
+            await getProducts();
 
 
+            setProducts(data);
 
 
-useEffect(()=>{
 
-loadProducts();
+        }
 
-},[]);
+        catch(error){
 
 
+            console.log(error);
 
 
+            toast.error(
+                "Failed to load products"
+            );
 
-const handleSubmit=async(data)=>{
 
+        }
 
-try{
 
+    };
 
-if(selectedProduct){
 
 
-await updateProduct(
-selectedProduct._id,
-data
-);
 
 
-toast.success(
-"Product updated"
-);
 
 
-}
-else{
+    const handleChange=(e)=>{
 
 
-await createProduct(data);
+        setForm({
 
+            ...form,
 
-toast.success(
-"Product added"
-);
+            [e.target.name]:
+            e.target.value
 
+        });
 
-}
 
+    };
 
 
-setSelectedProduct(null);
 
-loadProducts();
 
 
 
-}catch(error){
 
 
-console.log(error);
+    const handleSubmit=async(e)=>{
 
-toast.error(
-"Operation failed"
-);
 
+        e.preventDefault();
 
-}
 
 
-};
+        try{
 
 
+            if(editId){
 
 
+                await updateProduct(
 
-const handleDelete=async(product)=>{
+                    editId,
 
+                    form
 
-if(
-!window.confirm(
-`Delete ${product.productName}?`
-)
-)
-return;
+                );
 
 
+                toast.success(
+                    "Product Updated"
+                );
 
-try{
 
+            }
 
-await deleteProduct(
-product._id
-);
+            else{
 
 
-toast.success(
-"Product deleted"
-);
+                await createProduct(
 
+                    form
 
-loadProducts();
+                );
 
 
-}catch(error){
+                toast.success(
+                    "Product Added"
+                );
 
-toast.error(
-"Delete failed"
-);
 
-}
+            }
 
-};
 
 
 
+            setForm({
 
+                productName:"",
+                category:"",
+                brand:"",
+                purchasePrice:"",
+                sellingPrice:"",
+                gst:"",
+                currentStock:"",
+                minimumStock:"",
+                unit:"packet"
 
+            });
 
-const handleImport=async()=>{
 
 
-if(!importFile){
+            setEditId(null);
 
-toast.error(
-"Select CSV file"
-);
 
-return;
+            loadProducts();
 
-}
 
 
+        }
 
-try{
+        catch(error){
 
 
-const result =
-await importProducts(
-importFile
-);
+            console.log(error);
 
 
+            toast.error(
 
-toast.success(
-`${result.inserted} products imported`
-);
+                error.response?.data?.message ||
 
+                "Operation failed"
 
+            );
 
-setImportFile(null);
 
+        }
 
-loadProducts();
 
+    };
 
 
-}catch(error){
 
 
-console.log(error);
 
 
-toast.error(
-"Import failed"
-);
 
+    const handleDelete=async(id)=>{
 
-}
 
-};
+        try{
 
 
+            await deleteProduct(id);
 
 
+            toast.success(
+                "Product Deleted"
+            );
 
 
+            loadProducts();
 
-const downloadTemplate=()=>{
 
+        }
 
-const csv=[
+        catch(error){
 
-[
-"productName",
-"category",
-"brand",
-"purchasePrice",
-"sellingPrice",
-"gst",
-"currentStock",
-"minimumStock",
-"unit",
-"expiryDate",
-"supplier"
-],
 
+            console.log(error);
 
-[
-"Urea Fertilizer",
-"Fertilizer",
-"ABC",
-500,
-650,
-5,
-100,
-10,
-"bag",
-"",
-"XYZ Supplier"
-]
 
-]
+            toast.error(
+                "Delete failed"
+            );
 
-.map(row=>row.join(","))
 
-.join("\n");
+        }
 
 
+    };
 
-const blob =
-new Blob(
-[csv],
-{
-type:"text/csv"
-}
-);
 
 
 
-const url =
-URL.createObjectURL(blob);
 
 
 
-const link =
-document.createElement("a");
+    const handleEdit=(product)=>{
 
 
-link.href=url;
+        setEditId(product._id);
 
-link.download=
-"product_import_template.csv";
 
 
-link.click();
+        setForm({
 
+            productName:product.productName,
 
-};
+            category:product.category,
 
+            brand:product.brand,
 
+            purchasePrice:product.purchasePrice,
 
+            sellingPrice:product.sellingPrice,
 
+            gst:product.gst,
 
+            currentStock:product.currentStock,
 
-const categories=[
+            minimumStock:product.minimumStock,
 
-"All",
+            unit:product.unit
 
-...new Set(
-products.map(
-p=>p.category
-)
-)
 
-];
+        });
 
 
 
+    };
 
 
-const filteredProducts =
-products
 
-.filter(product=>
 
-product.productName
-.toLowerCase()
-.includes(
-search.toLowerCase()
-)
 
-)
 
 
-.filter(product=>
+    return(
 
-category==="All"
-||
-product.category===category
 
-)
+<div className="space-y-8">
 
-
-
-.sort((a,b)=>{
-
-
-if(sort==="priceHigh")
-
-return b.sellingPrice-a.sellingPrice;
-
-
-if(sort==="priceLow")
-
-return a.sellingPrice-b.sellingPrice;
-
-
-if(sort==="stock")
-
-return b.currentStock-a.currentStock;
-
-
-return new Date(b.createdAt)-new Date(a.createdAt);
-
-
-});
-
-
-
-
-
-const totalProducts =
-products.length;
-
-
-
-const totalStock =
-products.reduce(
-(sum,p)=>sum+p.currentStock,
-0
-);
-
-
-
-const lowStock =
-products.filter(
-p=>p.currentStock<=p.minimumStock
-).length;
-
-
-
-
-const inventoryValue =
-products.reduce(
-
-(sum,p)=>
-sum+(p.purchasePrice*p.currentStock),
-
-0
-
-);
-
-
-
-
-
-const lastIndex =
-page*productsPerPage;
-
-
-const firstIndex =
-lastIndex-productsPerPage;
-
-
-
-const paginatedProducts =
-filteredProducts.slice(
-firstIndex,
-lastIndex
-);
-
-
-
-const totalPages =
-Math.ceil(
-filteredProducts.length/productsPerPage
-);
-
-
-
-
-
-return(
-
-<div className="p-6">
 
 
 <h1 className="text-3xl font-bold text-green-700">
 
-📦 Product Management
+Products Management
 
 </h1>
 
 
-<p className="text-gray-500 mb-6">
-
-Shetkari Agro Inventory
-
-</p>
 
 
 
-
-<div className="grid md:grid-cols-4 gap-5 mb-8">
-
-
-<div className="bg-white shadow rounded-xl p-5">
-
-<p>Total Products</p>
-
-<h2 className="text-3xl font-bold">
-
-{totalProducts}
-
-</h2>
-
-</div>
+<div className="bg-white shadow rounded-xl p-6">
 
 
-
-<div className="bg-white shadow rounded-xl p-5">
-
-<p>Total Stock</p>
-
-<h2 className="text-3xl font-bold">
-
-{totalStock}
-
-</h2>
-
-</div>
-
-
-
-
-<div className="bg-white shadow rounded-xl p-5">
-
-<p>Low Stock</p>
-
-<h2 className="text-3xl font-bold text-red-600">
-
-{lowStock}
-
-</h2>
-
-</div>
-
-
-
-
-<div className="bg-white shadow rounded-xl p-5">
-
-<p>Inventory Value</p>
-
-<h2 className="text-xl font-bold">
-
-₹ {inventoryValue}
-
-</h2>
-
-</div>
-
-
-</div>
-
-
-
-
-
-<div className="grid xl:grid-cols-3 gap-6">
-
-
-
-<ProductForm
-
+<form
 onSubmit={handleSubmit}
+className="grid md:grid-cols-3 gap-4"
+>
 
-selectedProduct={selectedProduct}
-
-/>
-
-
-
-
-
-<div className="xl:col-span-2">
-
-
-
-<div className="bg-white shadow rounded-xl p-4 grid md:grid-cols-3 gap-3 mb-4">
 
 
 <input
-
-placeholder="Search Product"
-
-value={search}
-
-onChange={
-e=>setSearch(e.target.value)
-}
-
-className="border p-3 rounded-xl"
-
+name="productName"
+value={form.productName}
+onChange={handleChange}
+placeholder="Product Name"
+className="border p-3 rounded"
 />
+
+
+
+<input
+name="category"
+value={form.category}
+onChange={handleChange}
+placeholder="Category"
+className="border p-3 rounded"
+/>
+
+
+
+
+<input
+name="brand"
+value={form.brand}
+onChange={handleChange}
+placeholder="Brand"
+className="border p-3 rounded"
+/>
+
+
+
+
+
+<input
+name="purchasePrice"
+value={form.purchasePrice}
+onChange={handleChange}
+placeholder="Purchase Price"
+type="number"
+className="border p-3 rounded"
+/>
+
+
+
+
+
+<input
+name="sellingPrice"
+value={form.sellingPrice}
+onChange={handleChange}
+placeholder="Selling Price"
+type="number"
+className="border p-3 rounded"
+/>
+
+
+
+
+
+<input
+name="gst"
+value={form.gst}
+onChange={handleChange}
+placeholder="GST %"
+type="number"
+className="border p-3 rounded"
+/>
+
+
+
+
+
+<input
+name="currentStock"
+value={form.currentStock}
+onChange={handleChange}
+placeholder="Current Stock"
+type="number"
+className="border p-3 rounded"
+/>
+
+
+
+
+
+<input
+name="minimumStock"
+value={form.minimumStock}
+onChange={handleChange}
+placeholder="Minimum Stock"
+type="number"
+className="border p-3 rounded"
+/>
+
+
 
 
 
 <select
 
-value={category}
+name="unit"
 
-onChange={
-e=>setCategory(e.target.value)
-}
+value={form.unit}
 
-className="border p-3 rounded-xl"
+onChange={handleChange}
+
+className="border p-3 rounded"
 
 >
+
+
+<option value="packet">
+Packet
+</option>
+
+
+<option value="kg">
+Kg
+</option>
+
+
+<option value="litre">
+Litre
+</option>
+
+
+<option value="bag">
+Bag
+</option>
+
+
+<option value="bottle">
+Bottle
+</option>
+
+
+</select>
+
+
+
+
+
+<button
+
+className="bg-green-700 text-white rounded p-3"
+
+>
+
+
+{
+editId ?
+
+"Update Product"
+
+:
+
+"Add Product"
+
+}
+
+
+</button>
+
+
+
+
+</form>
+
+
+</div>
+
+
+
+
+
+
+
+
+<div className="bg-white shadow rounded-xl overflow-x-auto">
+
+
+<table className="w-full">
+
+
+<thead className="bg-green-700 text-white">
+
+
+<tr>
+
+
+<th className="p-3">
+Name
+</th>
+
+
+<th className="p-3">
+Category
+</th>
+
+
+<th className="p-3">
+Stock
+</th>
+
+
+<th className="p-3">
+Price
+</th>
+
+
+<th className="p-3">
+Action
+</th>
+
+
+</tr>
+
+
+</thead>
+
+
+
+<tbody>
+
+
 
 {
 
-categories.map(c=>(
+products.map((product)=>(
 
-<option key={c}>
 
-{c}
 
-</option>
+<tr
+key={product._id}
+className="border-b"
+>
+
+
+
+<td className="p-3">
+
+{product.productName}
+
+</td>
+
+
+
+<td className="p-3">
+
+{product.category}
+
+</td>
+
+
+
+<td className="p-3">
+
+{product.currentStock}
+
+</td>
+
+
+
+<td className="p-3">
+
+₹ {product.sellingPrice}
+
+</td>
+
+
+
+<td className="p-3 space-x-2">
+
+
+<button
+
+onClick={()=>handleEdit(product)}
+
+className="bg-blue-600 text-white px-3 py-1 rounded"
+
+>
+
+Edit
+
+</button>
+
+
+
+
+<button
+
+onClick={()=>handleDelete(product._id)}
+
+className="bg-red-600 text-white px-3 py-1 rounded"
+
+>
+
+Delete
+
+</button>
+
+
+
+</td>
+
+
+
+</tr>
+
+
 
 ))
 
+
 }
 
-</select>
+
+
+</tbody>
 
 
 
-
-<select
-
-value={sort}
-
-onChange={
-e=>setSort(e.target.value)
-}
-
-className="border p-3 rounded-xl"
-
->
-
-
-<option value="latest">
-Latest
-</option>
-
-
-<option value="priceHigh">
-Price High
-</option>
-
-
-<option value="priceLow">
-Price Low
-</option>
-
-
-<option value="stock">
-Stock
-</option>
-
-
-</select>
+</table>
 
 
 </div>
@@ -638,133 +644,9 @@ Stock
 
 
 
-
-<div className="flex gap-3 mb-4 flex-wrap">
-
-
-<button
-
-onClick={downloadTemplate}
-
-className="bg-blue-600 text-white px-4 py-2 rounded-xl"
-
->
-
-📄 Download Template
-
-</button>
-
-
-
-
-<input
-
-type="file"
-
-accept=".csv,.xlsx,.xls"
-
-onChange={
-e=>setImportFile(e.target.files[0])
-}
-
-className="border p-2 rounded-xl"
-
-/>
-
-
-
-
-<button
-
-onClick={handleImport}
-
-className="bg-green-700 text-white px-4 py-2 rounded-xl"
-
->
-
-⬆ Import CSV / Excel
-
-</button>
-
-
 </div>
 
 
-
-
-
-<ProductTable
-
-products={paginatedProducts}
-
-onDelete={handleDelete}
-
-onEdit={
-product=>setSelectedProduct(product)
-}
-
-/>
-
-
-
-
-
-<div className="flex justify-center gap-4 mt-5">
-
-
-<button
-
-disabled={page===1}
-
-onClick={()=>setPage(page-1)}
-
-className="bg-green-700 text-white px-4 py-2 rounded-xl"
-
->
-
-Previous
-
-</button>
-
-
-
-<span>
-
-{page}/{totalPages || 1}
-
-</span>
-
-
-
-
-<button
-
-disabled={page===totalPages}
-
-onClick={()=>setPage(page+1)}
-
-className="bg-green-700 text-white px-4 py-2 rounded-xl"
-
->
-
-Next
-
-</button>
-
-
-</div>
-
-
-
-</div>
-
-
-</div>
-
-
-</div>
-
-);
-
+    );
 
 }

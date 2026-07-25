@@ -1,82 +1,98 @@
 import Product from "../models/Product.js";
 import Category from "../models/Category.js";
 
-import fs from "fs";
-import csv from "csv-parser";
-import XLSX from "xlsx";
 
-
-
-// ===============================
 // CREATE PRODUCT
-// ===============================
 
 export const createProduct = async(req,res)=>{
-
 
     try{
 
 
-        const productData = {
+        console.log("Received Product Data:");
+        console.log(req.body);
 
-            productName:req.body.productName,
 
-            category:req.body.category,
 
-            brand:req.body.brand || "",
+        const {
 
-            purchasePrice:Number(req.body.purchasePrice || 0),
+            productName,
+            category,
+            brand,
+            purchasePrice,
+            sellingPrice,
+            gst,
+            currentStock,
+            minimumStock,
+            unit,
+            expiryDate,
+            supplier
 
-            sellingPrice:Number(req.body.sellingPrice || 0),
-
-            gst:Number(req.body.gst || 0),
-
-            currentStock:Number(req.body.currentStock || 0),
-
-            minimumStock:Number(req.body.minimumStock || 5),
-
-            unit:req.body.unit || "packet",
-
-            expiryDate:req.body.expiryDate || null,
-
-            supplier:req.body.supplier || ""
-
-        };
+        } = req.body;
 
 
 
 
-        // Create category automatically
+        // create category automatically
 
-        if(productData.category){
+        if(category){
 
 
-            const exists =
+            const categoryExists =
             await Category.findOne({
 
-                name:productData.category
+                name:category
 
             });
 
 
 
-            if(!exists){
+            if(!categoryExists){
 
                 await Category.create({
 
-                    name:productData.category
+                    name:category
 
                 });
 
             }
+
 
         }
 
 
 
 
+
         const product =
-        await Product.create(productData);
+        await Product.create({
+
+            productName,
+
+            category,
+
+            brand,
+
+            purchasePrice:Number(purchasePrice),
+
+            sellingPrice:Number(sellingPrice),
+
+            gst:Number(gst || 0),
+
+            currentStock:Number(currentStock || 0),
+
+            minimumStock:Number(minimumStock || 5),
+
+            unit:unit || "packet",
+
+            expiryDate,
+
+            supplier
+
+
+        });
+
+
 
 
 
@@ -84,9 +100,10 @@ export const createProduct = async(req,res)=>{
 
             success:true,
 
-            message:"Product Added",
+            message:"Product Added Successfully",
 
             product
+
 
         });
 
@@ -98,10 +115,9 @@ export const createProduct = async(req,res)=>{
 
 
         console.log(
-            "Create Product Error:",
+            "PRODUCT ERROR:",
             error
         );
-
 
 
         res.status(500).json({
@@ -123,11 +139,7 @@ export const createProduct = async(req,res)=>{
 
 
 
-
-// ===============================
 // GET PRODUCTS
-// ===============================
-
 
 export const getProducts = async(req,res)=>{
 
@@ -147,6 +159,7 @@ export const getProducts = async(req,res)=>{
 
 
         res.json(products);
+
 
 
     }
@@ -171,38 +184,28 @@ export const getProducts = async(req,res)=>{
 
 
 
+// UPDATE PRODUCT
 
-
-// ===============================
-// GET SINGLE PRODUCT
-// ===============================
-
-
-export const getProductById = async(req,res)=>{
+export const updateProduct = async(req,res)=>{
 
 
     try{
 
 
         const product =
-        await Product.findById(
+        await Product.findByIdAndUpdate(
 
-            req.params.id
+            req.params.id,
+
+            req.body,
+
+            {
+
+                new:true
+
+            }
 
         );
-
-
-
-        if(!product){
-
-            return res.status(404).json({
-
-                message:"Product not found"
-
-            });
-
-        }
-
 
 
         res.json(product);
@@ -231,75 +234,7 @@ export const getProductById = async(req,res)=>{
 
 
 
-
-
-// ===============================
-// UPDATE PRODUCT
-// ===============================
-
-
-export const updateProduct = async(req,res)=>{
-
-
-    try{
-
-
-        const product =
-        await Product.findByIdAndUpdate(
-
-            req.params.id,
-
-            req.body,
-
-            {
-
-                new:true,
-
-                runValidators:true
-
-            }
-
-        );
-
-
-
-        res.json({
-
-            success:true,
-
-            product
-
-        });
-
-
-
-    }
-
-    catch(error){
-
-
-        res.status(500).json({
-
-            message:error.message
-
-        });
-
-
-    }
-
-
-};
-
-
-
-
-
-
-
-
-// ===============================
 // DELETE PRODUCT
-// ===============================
 
 
 export const deleteProduct = async(req,res)=>{
@@ -317,296 +252,14 @@ export const deleteProduct = async(req,res)=>{
 
         res.json({
 
-            success:true,
-
-            message:"Product deleted"
+            message:"Deleted"
 
         });
-
 
 
     }
 
     catch(error){
-
-
-        res.status(500).json({
-
-            message:error.message
-
-        });
-
-
-    }
-
-
-};
-
-
-
-
-
-
-
-
-// ===============================
-// SEARCH PRODUCT
-// ===============================
-
-
-export const searchProducts = async(req,res)=>{
-
-
-    try{
-
-
-        const keyword =
-        req.query.keyword || "";
-
-
-
-        const products =
-        await Product.find({
-
-            $or:[
-
-                {
-
-                    productName:{
-
-                        $regex:keyword,
-
-                        $options:"i"
-
-                    }
-
-                },
-
-
-                {
-
-                    category:{
-
-                        $regex:keyword,
-
-                        $options:"i"
-
-                    }
-
-                },
-
-
-                {
-
-                    brand:{
-
-                        $regex:keyword,
-
-                        $options:"i"
-
-                    }
-
-                }
-
-            ]
-
-        })
-
-        .limit(10);
-
-
-
-        res.json(products);
-
-
-
-    }
-
-    catch(error){
-
-
-        res.status(500).json({
-
-            message:error.message
-
-        });
-
-
-    }
-
-
-};
-
-
-
-
-
-
-
-
-// ===============================
-// IMPORT PRODUCTS
-// ===============================
-
-
-export const importProducts = async(req,res)=>{
-
-
-    try{
-
-
-        if(!req.file){
-
-            return res.status(400).json({
-
-                message:"No file uploaded"
-
-            });
-
-        }
-
-
-
-        let data=[];
-
-
-
-        if(req.file.originalname.endsWith(".csv")){
-
-
-            data =
-            await new Promise((resolve,reject)=>{
-
-
-                const rows=[];
-
-
-
-                fs.createReadStream(req.file.path)
-
-                .pipe(csv())
-
-                .on(
-
-                    "data",
-
-                    row=>rows.push(row)
-
-                )
-
-                .on(
-
-                    "end",
-
-                    ()=>resolve(rows)
-
-                )
-
-                .on(
-
-                    "error",
-
-                    reject
-
-                );
-
-
-            });
-
-
-
-        }
-
-        else{
-
-
-            const workbook =
-            XLSX.readFile(
-
-                req.file.path
-
-            );
-
-
-            const sheet =
-            workbook.Sheets[
-
-                workbook.SheetNames[0]
-
-            ];
-
-
-
-            data =
-            XLSX.utils.sheet_to_json(sheet);
-
-
-        }
-
-
-
-
-        let count=0;
-
-
-
-        for(const item of data){
-
-
-            await Product.create({
-
-                productName:item.productName,
-
-                category:item.category,
-
-                brand:item.brand || "",
-
-                purchasePrice:Number(item.purchasePrice || 0),
-
-                sellingPrice:Number(item.sellingPrice || 0),
-
-                gst:Number(item.gst || 0),
-
-                currentStock:Number(item.currentStock || 0),
-
-                minimumStock:Number(item.minimumStock || 5),
-
-                unit:item.unit || "packet"
-
-            });
-
-
-
-            count++;
-
-
-        }
-
-
-
-        fs.unlinkSync(req.file.path);
-
-
-
-        res.json({
-
-            success:true,
-
-            message:"Import completed",
-
-            inserted:count
-
-        });
-
-
-
-    }
-
-    catch(error){
-
-
-        console.log(error);
-
 
 
         res.status(500).json({

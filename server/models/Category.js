@@ -1,23 +1,22 @@
 import mongoose from "mongoose";
 
 
-const categorySchema = new mongoose.Schema(
-{
-    name:{
-        type:String,
-        required:true,
-        unique:true,
-        trim:true
-    },
+const categorySchema =
+new mongoose.Schema({
 
-    description:{
+    name:{
+
         type:String,
-        default:""
+
+        required:true,
+
+        unique:true,
+
+        trim:true
+
     }
 
-},
-{
-    timestamps:true
+
 });
 
 

@@ -2,100 +2,78 @@ import API from "./api";
 
 
 
-// Get all products
-
 export const getProducts = async()=>{
 
-    const response =
+
+    const res =
     await API.get("/products");
 
-    return response.data;
+
+    return res.data;
+
 
 };
 
 
 
 
-// Create product
 
 export const createProduct = async(data)=>{
 
-    const response =
+
+    const res =
     await API.post(
+
         "/products",
+
         data
+
     );
 
-    return response.data;
+
+    return res.data;
+
 
 };
 
 
 
 
-// Update product
 
 export const updateProduct = async(id,data)=>{
 
-    const response =
+
+    const res =
     await API.put(
+
         `/products/${id}`,
+
         data
+
     );
 
-    return response.data;
+
+    return res.data;
+
 
 };
 
 
 
 
-// Delete product
 
 export const deleteProduct = async(id)=>{
 
-    const response =
+
+    const res =
     await API.delete(
+
         `/products/${id}`
-    );
-
-    return response.data;
-
-};
-
-
-
-
-// Import CSV / Excel products
-
-export const importProducts = async(file)=>{
-
-
-    const formData = new FormData();
-
-
-    formData.append(
-        "file",
-        file
-    );
-
-
-    const response =
-    await API.post(
-
-        "/products/import",
-
-        formData,
-
-        {
-            headers:{
-                "Content-Type":"multipart/form-data"
-            }
-        }
 
     );
 
 
-    return response.data;
+    return res.data;
+
 
 };
