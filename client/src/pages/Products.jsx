@@ -9,29 +9,35 @@ import {
 } from "../services/productService";
 
 
+
 export default function Products(){
 
 
-    const [products,setProducts] = useState([]);
-
-
-    const [form,setForm] = useState({
+    const initialForm = {
 
         productName:"",
         category:"",
         brand:"",
         purchasePrice:"",
         sellingPrice:"",
-        gst:"",
-        currentStock:"",
-        minimumStock:"",
+        gst:0,
+        currentStock:0,
+        minimumStock:5,
         unit:"packet"
 
-    });
+    };
 
 
+
+    const [products,setProducts] = useState([]);
+
+    const [form,setForm] = useState(initialForm);
 
     const [editId,setEditId] = useState(null);
+
+    const [loading,setLoading] = useState(false);
+
+
 
 
 
@@ -45,18 +51,21 @@ export default function Products(){
 
 
 
+
     const loadProducts = async()=>{
 
 
         try{
 
 
-            const data =
-            await getProducts();
+            const data = await getProducts();
 
 
-            setProducts(data);
-
+            setProducts(
+                Array.isArray(data)
+                ? data
+                : []
+            );
 
 
         }
@@ -64,11 +73,17 @@ export default function Products(){
         catch(error){
 
 
-            console.log(error);
+            console.log(
+                "LOAD PRODUCTS:",
+                error
+            );
 
 
             toast.error(
+
+                error.response?.data?.message ||
                 "Failed to load products"
+
             );
 
 
@@ -76,6 +91,8 @@ export default function Products(){
 
 
     };
+
+
 
 
 
@@ -105,14 +122,63 @@ export default function Products(){
 
 
 
+
     const handleSubmit=async(e)=>{
 
 
         e.preventDefault();
 
 
-
         try{
+
+
+            setLoading(true);
+
+
+
+            const productData = {
+
+
+                productName:
+                form.productName.trim(),
+
+
+                category:
+                form.category.trim(),
+
+
+                brand:
+                form.brand.trim(),
+
+
+                purchasePrice:
+                Number(form.purchasePrice),
+
+
+                sellingPrice:
+                Number(form.sellingPrice),
+
+
+                gst:
+                Number(form.gst),
+
+
+                currentStock:
+                Number(form.currentStock),
+
+
+                minimumStock:
+                Number(form.minimumStock),
+
+
+                unit:
+                form.unit
+
+
+            };
+
+
+
 
 
             if(editId){
@@ -122,7 +188,7 @@ export default function Products(){
 
                     editId,
 
-                    form
+                    productData
 
                 );
 
@@ -139,7 +205,7 @@ export default function Products(){
 
                 await createProduct(
 
-                    form
+                    productData
 
                 );
 
@@ -154,41 +220,33 @@ export default function Products(){
 
 
 
-            setForm({
 
-                productName:"",
-                category:"",
-                brand:"",
-                purchasePrice:"",
-                sellingPrice:"",
-                gst:"",
-                currentStock:"",
-                minimumStock:"",
-                unit:"packet"
-
-            });
-
+            setForm(initialForm);
 
 
             setEditId(null);
 
 
-            loadProducts();
+            await loadProducts();
 
 
 
         }
 
+
         catch(error){
 
 
-            console.log(error);
+            console.log(
+                "SUBMIT ERROR:",
+                error
+            );
+
 
 
             toast.error(
 
                 error.response?.data?.message ||
-
                 "Operation failed"
 
             );
@@ -197,7 +255,18 @@ export default function Products(){
         }
 
 
+        finally{
+
+
+            setLoading(false);
+
+
+        }
+
+
     };
+
+
 
 
 
@@ -214,12 +283,15 @@ export default function Products(){
             await deleteProduct(id);
 
 
+
             toast.success(
                 "Product Deleted"
             );
 
 
-            loadProducts();
+
+            await loadProducts();
+
 
 
         }
@@ -227,11 +299,17 @@ export default function Products(){
         catch(error){
 
 
-            console.log(error);
+            console.log(
+                "DELETE ERROR:",
+                error
+            );
 
 
             toast.error(
+
+                error.response?.data?.message ||
                 "Delete failed"
+
             );
 
 
@@ -239,6 +317,8 @@ export default function Products(){
 
 
     };
+
+
 
 
 
@@ -252,30 +332,55 @@ export default function Products(){
         setEditId(product._id);
 
 
-
         setForm({
 
-            productName:product.productName,
+            productName:
+            product.productName || "",
 
-            category:product.category,
 
-            brand:product.brand,
+            category:
+            product.category || "",
 
-            purchasePrice:product.purchasePrice,
 
-            sellingPrice:product.sellingPrice,
+            brand:
+            product.brand || "",
 
-            gst:product.gst,
 
-            currentStock:product.currentStock,
+            purchasePrice:
+            product.purchasePrice || 0,
 
-            minimumStock:product.minimumStock,
 
-            unit:product.unit
+            sellingPrice:
+            product.sellingPrice || 0,
+
+
+            gst:
+            product.gst || 0,
+
+
+            currentStock:
+            product.currentStock || 0,
+
+
+            minimumStock:
+            product.minimumStock || 5,
+
+
+            unit:
+            product.unit || "packet"
 
 
         });
 
+
+
+        window.scrollTo({
+
+            top:0,
+
+            behavior:"smooth"
+
+        });
 
 
     };
@@ -286,11 +391,11 @@ export default function Products(){
 
 
 
-    return(
 
+
+return (
 
 <div className="space-y-8">
-
 
 
 <h1 className="text-3xl font-bold text-green-700">
@@ -307,105 +412,72 @@ Products Management
 
 
 <form
+
 onSubmit={handleSubmit}
+
 className="grid md:grid-cols-3 gap-4"
+
 >
 
 
 
-<input
-name="productName"
-value={form.productName}
-onChange={handleChange}
-placeholder="Product Name"
-className="border p-3 rounded"
-/>
 
 
+{
+[
 
-<input
-name="category"
-value={form.category}
-onChange={handleChange}
-placeholder="Category"
-className="border p-3 rounded"
-/>
+["productName","Product Name"],
 
+["category","Category"],
 
+["brand","Brand"],
 
+["purchasePrice","Purchase Price"],
 
-<input
-name="brand"
-value={form.brand}
-onChange={handleChange}
-placeholder="Brand"
-className="border p-3 rounded"
-/>
+["sellingPrice","Selling Price"],
 
+["gst","GST %"],
 
+["currentStock","Current Stock"],
 
+["minimumStock","Minimum Stock"]
+
+].map(([name,placeholder])=>(
 
 
 <input
-name="purchasePrice"
-value={form.purchasePrice}
+
+key={name}
+
+name={name}
+
+value={form[name]}
+
 onChange={handleChange}
-placeholder="Purchase Price"
-type="number"
+
+placeholder={placeholder}
+
+type={
+name.includes("Price") ||
+name==="gst" ||
+name.includes("Stock")
+?
+"number"
+:
+"text"
+}
+
 className="border p-3 rounded"
+
 />
 
 
+))
 
 
-
-<input
-name="sellingPrice"
-value={form.sellingPrice}
-onChange={handleChange}
-placeholder="Selling Price"
-type="number"
-className="border p-3 rounded"
-/>
+}
 
 
-
-
-
-<input
-name="gst"
-value={form.gst}
-onChange={handleChange}
-placeholder="GST %"
-type="number"
-className="border p-3 rounded"
-/>
-
-
-
-
-
-<input
-name="currentStock"
-value={form.currentStock}
-onChange={handleChange}
-placeholder="Current Stock"
-type="number"
-className="border p-3 rounded"
-/>
-
-
-
-
-
-<input
-name="minimumStock"
-value={form.minimumStock}
-onChange={handleChange}
-placeholder="Minimum Stock"
-type="number"
-className="border p-3 rounded"
-/>
 
 
 
@@ -455,7 +527,12 @@ Bottle
 
 
 
+
+
+
 <button
+
+disabled={loading}
 
 className="bg-green-700 text-white rounded p-3"
 
@@ -463,7 +540,18 @@ className="bg-green-700 text-white rounded p-3"
 
 
 {
-editId ?
+
+loading
+
+?
+
+"Saving..."
+
+:
+
+editId
+
+?
 
 "Update Product"
 
@@ -491,6 +579,7 @@ editId ?
 
 
 
+
 <div className="bg-white shadow rounded-xl overflow-x-auto">
 
 
@@ -501,7 +590,6 @@ editId ?
 
 
 <tr>
-
 
 <th className="p-3">
 Name
@@ -535,21 +623,47 @@ Action
 
 
 
-<tbody>
 
+
+<tbody>
 
 
 {
 
-products.map((product)=>(
+products.length===0
 
+?
+
+<tr>
+
+<td
+
+colSpan="5"
+
+className="text-center p-5"
+
+>
+
+No products found
+
+</td>
+
+</tr>
+
+
+:
+
+
+products.map(product=>(
 
 
 <tr
-key={product._id}
-className="border-b"
->
 
+key={product._id}
+
+className="border-b"
+
+>
 
 
 <td className="p-3">
@@ -578,7 +692,7 @@ className="border-b"
 
 <td className="p-3">
 
-₹ {product.sellingPrice}
+$ {product.sellingPrice}
 
 </td>
 
@@ -623,7 +737,6 @@ Delete
 </tr>
 
 
-
 ))
 
 
@@ -632,7 +745,6 @@ Delete
 
 
 </tbody>
-
 
 
 </table>
@@ -646,7 +758,7 @@ Delete
 
 </div>
 
+);
 
-    );
 
 }

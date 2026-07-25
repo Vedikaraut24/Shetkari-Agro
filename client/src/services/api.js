@@ -14,35 +14,96 @@ const API = axios.create({
 
 
 
+
+// Attach JWT automatically
+
 API.interceptors.request.use(
 
-(config)=>{
+    (config)=>{
 
 
-    const token =
-    localStorage.getItem("token");
+        const token =
+        localStorage.getItem("token");
 
 
-    if(token){
 
-        config.headers.Authorization =
-        `Bearer ${token}`;
+        if(token){
+
+            config.headers.Authorization =
+            `Bearer ${token}`;
+
+        }
+
+
+        return config;
+
+
+    },
+
+
+    (error)=>{
+
+
+        return Promise.reject(error);
+
+
+    }
+
+);
+
+
+
+
+
+// Global response error handler
+
+API.interceptors.response.use(
+
+
+    (response)=>{
+
+
+        return response;
+
+
+    },
+
+
+    (error)=>{
+
+
+        if(error.response){
+
+
+            console.log(
+                "API ERROR:",
+                error.response.data
+            );
+
+
+        }
+
+        else{
+
+
+            console.log(
+                "NETWORK ERROR:",
+                error.message
+            );
+
+
+        }
+
+
+
+        return Promise.reject(error);
+
 
     }
 
 
-    return config;
-
-
-},
-
-(error)=>{
-
-    return Promise.reject(error);
-
-}
-
 );
+
 
 
 
