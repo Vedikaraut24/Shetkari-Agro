@@ -30,103 +30,55 @@ const app = express();
 
 
 // ===============================
-// CORS CONFIGURATION
+// CORS FIX
 // ===============================
 
 
-const allowedOrigins = [
-
-    "http://localhost:5173",
-
-    "https://shetkari-agro.vercel.app",
-
-    "https://shetkari-agro-bj06ci0ea-vedika9.vercel.app",
-
-    "https://shetkari-agro-6y8egshqd-vedika9.vercel.app"
-
-];
+const corsOptions = {
 
 
+    origin:true,
 
 
-app.use(
-
-    cors({
-
-        origin:(origin,callback)=>{
+    credentials:true,
 
 
-            // Allow Postman/mobile requests
+    methods:[
 
-            if(!origin){
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "OPTIONS"
 
-                return callback(null,true);
-
-            }
+    ],
 
 
+    allowedHeaders:[
 
-            if(
+        "Content-Type",
 
-                allowedOrigins.includes(origin)
+        "Authorization"
 
-            ){
+    ]
 
-                return callback(null,true);
 
-            }
+};
 
 
 
-            console.log(
-                "Blocked CORS Origin:",
-                origin
-            );
-
-
-            return callback(null,false);
-
-
-        },
-
-
-        credentials:true,
-
-
-        methods:[
-
-            "GET",
-            "POST",
-            "PUT",
-            "DELETE",
-            "PATCH",
-            "OPTIONS"
-
-        ],
-
-
-        allowedHeaders:[
-
-            "Content-Type",
-
-            "Authorization"
-
-        ]
-
-    })
-
-);
+app.use(cors(corsOptions));
 
 
 
-
-// Express 5 preflight fix
+// Express 5 preflight support
 
 app.options(
 
     "/{*any}",
 
-    cors()
+    cors(corsOptions)
 
 );
 
@@ -292,8 +244,9 @@ app.use(
 
 
 
+
 // ===============================
-// GLOBAL ERROR HANDLER
+// ERROR HANDLER
 // ===============================
 
 
@@ -304,7 +257,7 @@ app.use(
 
     console.log(
 
-        "SERVER ERROR:",
+        "ERROR:",
 
         err.message
 
@@ -321,8 +274,10 @@ app.use(
     });
 
 
+}
 
-});
+);
+
 
 
 
@@ -332,7 +287,7 @@ app.use(
 
 
 // ===============================
-// DATABASE CONNECTION
+// DATABASE
 // ===============================
 
 
@@ -359,7 +314,7 @@ mongoose.connect(
 
     console.log(
 
-        "MongoDB Connection Error:",
+        "MongoDB Error:",
 
         error.message
 
@@ -367,6 +322,7 @@ mongoose.connect(
 
 
 });
+
 
 
 
