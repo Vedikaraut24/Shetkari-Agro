@@ -25,15 +25,28 @@ export const getDashboard = async(req,res)=>{
 
 
 
-        // LOW STOCK
+        // LOW STOCK PRODUCTS
 
         const lowStockProducts =
         await Product.find({
 
             $expr:{
                 $lte:[
-                    "$currentStock",
-                    "$minimumStock"
+
+                    {
+                        $ifNull:[
+                            "$currentStock",
+                            0
+                        ]
+                    },
+
+                    {
+                        $ifNull:[
+                            "$minimumStock",
+                            0
+                        ]
+                    }
+
                 ]
             }
 
@@ -43,6 +56,7 @@ export const getDashboard = async(req,res)=>{
 
         const lowStock =
         lowStockProducts.length;
+
 
 
 
@@ -60,8 +74,20 @@ export const getDashboard = async(req,res)=>{
 
                         $multiply:[
 
-                            "$purchasePrice",
-                            "$currentStock"
+                            {
+                                $ifNull:[
+                                    "$purchasePrice",
+                                    0
+                                ]
+                            },
+
+
+                            {
+                                $ifNull:[
+                                    "$currentStock",
+                                    0
+                                ]
+                            }
 
                         ]
 
@@ -97,12 +123,12 @@ export const getDashboard = async(req,res)=>{
 
 
 
-        // TOTAL SALES
 
+
+        // TOTAL SALES
 
         const salesData =
         await Bill.aggregate([
-
 
             {
 
@@ -111,13 +137,19 @@ export const getDashboard = async(req,res)=>{
                     _id:null,
 
                     total:{
-                        $sum:"$grandTotal"
+
+                        $sum:{
+                            $ifNull:[
+                                "$grandTotal",
+                                0
+                            ]
+                        }
+
                     }
 
                 }
 
             }
-
 
         ]);
 
@@ -131,14 +163,19 @@ export const getDashboard = async(req,res)=>{
 
 
 
+
         // TODAY SALES
 
 
         const start =
         new Date();
 
+
         start.setHours(
-            0,0,0,0
+            0,
+            0,
+            0,
+            0
         );
 
 
@@ -166,7 +203,14 @@ export const getDashboard = async(req,res)=>{
                     _id:null,
 
                     total:{
-                        $sum:"$grandTotal"
+
+                        $sum:{
+                            $ifNull:[
+                                "$grandTotal",
+                                0
+                            ]
+                        }
+
                     }
 
                 }
@@ -187,7 +231,8 @@ export const getDashboard = async(req,res)=>{
 
 
 
-        // SALES CHART
+
+        // SALES GRAPH
 
 
         const salesChart =
@@ -198,14 +243,25 @@ export const getDashboard = async(req,res)=>{
                 $group:{
 
                     _id:{
+
                         month:{
                             $month:"$createdAt"
                         }
+
                     },
 
+
                     sales:{
-                        $sum:"$grandTotal"
+
+                        $sum:{
+                            $ifNull:[
+                                "$grandTotal",
+                                0
+                            ]
+                        }
+
                     }
+
 
                 }
 
@@ -215,7 +271,9 @@ export const getDashboard = async(req,res)=>{
             {
 
                 $sort:{
+
                     "_id.month":1
+
                 }
 
             }
@@ -228,7 +286,9 @@ export const getDashboard = async(req,res)=>{
 
 
 
-        // CATEGORY CHART
+
+
+        // CATEGORY GRAPH
 
 
         const categoryChart =
@@ -241,7 +301,9 @@ export const getDashboard = async(req,res)=>{
                     _id:"$category",
 
                     value:{
+
                         $sum:1
+
                     }
 
                 }
@@ -255,13 +317,17 @@ export const getDashboard = async(req,res)=>{
 
 
 
+
+
         // RECENT BILLS
 
 
         const recentBills =
         await Bill.find()
 
-        .populate("customer")
+        .populate(
+            "customer"
+        )
 
         .sort({
 
@@ -275,7 +341,13 @@ export const getDashboard = async(req,res)=>{
 
 
 
-        res.json({
+
+
+
+        res.status(200).json({
+
+            success:true,
+
 
             totalProducts,
 
@@ -299,6 +371,7 @@ export const getDashboard = async(req,res)=>{
 
             recentBills
 
+
         });
 
 
@@ -308,12 +381,18 @@ export const getDashboard = async(req,res)=>{
     catch(error){
 
 
-        console.log(error);
+        console.log(
+            "Dashboard Controller Error:",
+            error
+        );
 
 
         res.status(500).json({
 
-            message:error.message
+            success:false,
+
+            message:
+            "Dashboard data failed"
 
         });
 

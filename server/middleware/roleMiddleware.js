@@ -1,15 +1,66 @@
-const roleMiddleware = (...roles)=>{
+const roleMiddleware = (...roles) => {
 
 
-    return (req,res,next)=>{
+    return (req, res, next) => {
 
 
-        if(!roles.includes(req.user.role)){
+        try {
 
 
-            return res.status(403).json({
+            // Check user authentication
 
-                message:"Access denied"
+            if (!req.user) {
+
+                return res.status(401).json({
+
+                    success:false,
+
+                    message:"User not authenticated"
+
+                });
+
+            }
+
+
+
+
+            // Check user role
+
+            if (!roles.includes(req.user.role)) {
+
+
+                return res.status(403).json({
+
+                    success:false,
+
+                    message:"Access denied"
+
+                });
+
+            }
+
+
+
+
+            next();
+
+
+        } 
+        
+        catch(error) {
+
+
+            console.log(
+                "Role Middleware Error:",
+                error
+            );
+
+
+            return res.status(500).json({
+
+                success:false,
+
+                message:"Authorization error"
 
             });
 
@@ -17,13 +68,11 @@ const roleMiddleware = (...roles)=>{
         }
 
 
-        next();
-
-
     };
 
 
 };
+
 
 
 export default roleMiddleware;

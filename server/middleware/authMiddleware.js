@@ -1,19 +1,22 @@
 import jwt from "jsonwebtoken";
-import User from "../models/User.js";
 
 
-const authMiddleware = async (req, res, next) => {
-
-    try {
+const authMiddleware = (req,res,next)=>{
 
 
-        const token =
-        req.headers.authorization?.split(" ")[1];
+    try{
 
 
-        if(!token){
+        const authHeader =
+        req.headers.authorization;
+
+
+
+        if(!authHeader){
 
             return res.status(401).json({
+
+                success:false,
 
                 message:"No token provided"
 
@@ -23,26 +26,19 @@ const authMiddleware = async (req, res, next) => {
 
 
 
-        const decoded =
-        jwt.verify(
-            token,
-            process.env.JWT_SECRET
-        );
+
+        const token =
+        authHeader.split(" ")[1];
 
 
 
-        const user =
-        await User.findById(
-            decoded.id
-        );
-
-
-
-        if(!user){
+        if(!token){
 
             return res.status(401).json({
 
-                message:"User not found"
+                success:false,
+
+                message:"Invalid token"
 
             });
 
@@ -50,7 +46,22 @@ const authMiddleware = async (req, res, next) => {
 
 
 
-        req.user = user;
+
+
+        const decoded =
+        jwt.verify(
+
+            token,
+
+            process.env.JWT_SECRET
+
+        );
+
+
+
+
+        req.user = decoded;
+
 
 
         next();
@@ -58,17 +69,28 @@ const authMiddleware = async (req, res, next) => {
 
 
     }
+
     catch(error){
+
+
+        console.log(
+            "Auth Error:",
+            error.message
+        );
+
 
 
         return res.status(401).json({
 
-            message:"Invalid token"
+            success:false,
+
+            message:"Invalid or expired token"
 
         });
 
 
     }
+
 
 };
 

@@ -1,8 +1,7 @@
 import express from "express";
 
 import {
-    login,
-    createUser
+    login
 } from "../controllers/authController.js";
 
 
@@ -10,16 +9,11 @@ const router = express.Router();
 
 
 
+// Admin Login
+
 router.post(
     "/login",
     login
-);
-
-
-
-router.post(
-    "/create",
-    createUser
 );
 
 

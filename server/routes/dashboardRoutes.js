@@ -12,6 +12,9 @@ const router = express.Router();
 
 
 
+// Get dashboard data
+// Protected route - Admin only
+
 router.get(
     "/",
     authMiddleware,

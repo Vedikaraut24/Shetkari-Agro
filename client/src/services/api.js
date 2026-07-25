@@ -16,6 +16,8 @@ const API = axios.create({
 
 
 
+// Attach JWT token automatically
+
 API.interceptors.request.use(
 
 (config)=>{
@@ -39,6 +41,33 @@ API.interceptors.request.use(
 },
 
 (error)=>{
+
+    return Promise.reject(error);
+
+}
+
+);
+
+
+
+// Handle expired token
+
+API.interceptors.response.use(
+
+(response)=>response,
+
+(error)=>{
+
+
+    if(error.response?.status===401){
+
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+
+        window.location.href="/login";
+
+    }
+
 
     return Promise.reject(error);
 

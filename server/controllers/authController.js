@@ -1,14 +1,17 @@
-import User from "../models/User.js";
+import Admin from "../models/Admin.js";
 import bcrypt from "bcryptjs";
-import generateToken from "../utils/generateToken.js";
+import jwt from "jsonwebtoken";
 
 
 
-// LOGIN
+// =======================
+// LOGIN ADMIN
+// =======================
 
-export const login = async(req,res)=>{
+export const login = async (req, res) => {
 
-    try{
+
+    try {
 
 
         const {
@@ -16,126 +19,17 @@ export const login = async(req,res)=>{
             password
         } = req.body;
 
-        console.log("Database:", User.db.name);
-
-console.log("Collection:", User.collection.name);
 
 
-const allUsers = await User.find();
+        // Check input
 
-console.log("All users:", allUsers);
-
-        const user =
-        await User.findOne({
-            username
-        });
-
-
-
-        if(!user){
-
-            return res.status(404).json({
-
-                message:"User not found"
-
-            });
-
-        }
-
-
-
-        const match =
-        await bcrypt.compare(
-            password,
-            user.password
-        );
-
-
-
-        if(!match){
-
-            return res.status(401).json({
-
-                message:"Invalid password"
-
-            });
-
-        }
-
-
-
-        const token =
-        generateToken(
-            user._id,
-            user.role
-        );
-
-
-
-        res.json({
-
-            message:"Login successful",
-
-            token,
-
-            user:{
-                id:user._id,
-                username:user.username,
-                name:user.name,
-                role:user.role
-            }
-
-        });
-
-
-    }
-    catch(error){
-        console.log(error);
-        res.status(500).json({
-             
-            message:error.message
-
-        });
-
-    }
-
-};
-
-
-
-
-
-
-// CREATE USER
-
-export const createUser = async(req,res)=>{
-
-
-    try{
-
-
-        const {
-            username,
-            password,
-            name,
-            role
-        } = req.body;
-
-
-
-
-        const exists =
-        await User.findOne({
-            username
-        });
-
-
-
-        if(exists){
+        if(!username || !password){
 
             return res.status(400).json({
 
-                message:"User already exists"
+                success:false,
+
+                message:"Username and password required"
 
             });
 
@@ -144,48 +38,140 @@ export const createUser = async(req,res)=>{
 
 
 
-        const hashedPassword =
-        await bcrypt.hash(
+        // Find admin
+
+        const admin =
+        await Admin.findOne({
+
+            username
+
+        });
+
+
+
+        if(!admin){
+
+
+            return res.status(401).json({
+
+                success:false,
+
+                message:"Invalid username or password"
+
+            });
+
+
+        }
+
+
+
+
+        // Compare password
+
+        const isMatch =
+        await bcrypt.compare(
+
             password,
-            10
+
+            admin.password
+
+        );
+
+
+
+        if(!isMatch){
+
+
+            return res.status(401).json({
+
+                success:false,
+
+                message:"Invalid username or password"
+
+            });
+
+
+        }
+
+
+
+
+        // Create JWT Token
+
+        const token =
+        jwt.sign(
+
+            {
+
+                id:admin._id,
+
+                username:admin.username,
+
+                role:admin.role || "admin"
+
+            },
+
+            process.env.JWT_SECRET,
+
+            {
+
+                expiresIn:"7d"
+
+            }
+
         );
 
 
 
 
-        const user =
-        await User.create({
 
-            username,
+        res.status(200).json({
 
-            password:hashedPassword,
+            success:true,
 
-            name,
+            message:"Login successful",
 
-            role
+
+            token,
+
+
+            user:{
+
+
+                id:admin._id,
+
+                username:admin.username,
+
+                role:admin.role || "admin"
+
+
+            }
+
 
         });
 
-
-
-
-        res.status(201).json({
-
-            message:"User created",
-
-            user
-
-        });
 
 
     }
+
     catch(error){
+
+
+        console.log(
+            "Login Error:",
+            error
+        );
+
+
 
         res.status(500).json({
 
-            message:error.message
+            success:false,
+
+            message:"Server error"
 
         });
+
 
     }
 
