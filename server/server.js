@@ -6,15 +6,19 @@ import helmet from "helmet";
 import morgan from "morgan";
 
 
+// Routes
+
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
 import billRoutes from "./routes/billRoutes.js";
-import dashboardRoutes from "./routes/dashboardRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
+import dashboardRoutes from "./routes/dashboardRoutes.js";
 
 
+
+// Load Environment Variables
 
 dotenv.config();
 
@@ -24,169 +28,287 @@ const app = express();
 
 
 
-// =======================
-// CORS
-// =======================
+
+// ===============================
+// CORS CONFIGURATION
+// ===============================
 
 
-const allowedOrigins=[
+const allowedOrigins = [
+
+
+    "https://shetkari-agro.vercel.app",
 
 
     "http://localhost:5173",
 
 
-    "https://shetkari-agro-5vhb-lqo00nje4-vedika9.vercel.app"
+    "http://localhost:3000"
 
 
 ];
 
 
 
-app.use(cors({
 
-    origin:function(origin,callback){
+app.use(
 
+    cors({
 
-        if(!origin){
-
-            return callback(null,true);
-
-        }
+        origin:(origin,callback)=>{
 
 
+            // Allow mobile apps, Postman, server requests
 
-        if(allowedOrigins.includes(origin)){
+            if(!origin){
 
+                return callback(null,true);
 
-            return callback(null,true);
-
-
-        }
-
-
-        return callback(
-            new Error("Not allowed by CORS")
-        );
-
-
-    },
-
-    credentials:true
-
-}));
+            }
 
 
 
 
+            if(
+                allowedOrigins.includes(origin)
+            ){
 
-app.use(express.json());
+                return callback(null,true);
 
-app.use(express.urlencoded({
-
-    extended:true
-
-}));
-
-
-
-app.use(helmet());
-
-app.use(morgan("dev"));
+            }
 
 
 
+            console.log(
+                "Blocked CORS Origin:",
+                origin
+            );
 
 
-// =======================
-// DATABASE
-// =======================
+
+            return callback(
+                new Error("CORS not allowed")
+            );
+
+
+        },
+
+
+        methods:[
+
+            "GET",
+            "POST",
+            "PUT",
+            "DELETE",
+            "PATCH",
+            "OPTIONS"
+
+        ],
+
+
+        allowedHeaders:[
+
+            "Content-Type",
+            "Authorization"
+
+        ],
+
+
+        credentials:true
+
+
+    })
+
+);
+
+
+
+
+// Express 5 compatible preflight
+
+app.options(
+    "/{*any}",
+    cors()
+);
+
+
+
+
+
+// ===============================
+// MIDDLEWARE
+// ===============================
+
+
+app.use(
+    express.json()
+);
+
+
+app.use(
+    express.urlencoded({
+
+        extended:true
+
+    })
+);
+
+
+
+app.use(
+    helmet()
+);
+
+
+
+app.use(
+    morgan("dev")
+);
+
+
+
+
+
+
+// ===============================
+// HEALTH CHECK
+// ===============================
+
+
+app.get(
+    "/",
+    (req,res)=>{
+
+
+        res.json({
+
+            success:true,
+
+            message:
+            "Shetkari Agro API Running"
+
+        });
+
+
+    }
+);
+
+
+
+
+
+
+// ===============================
+// API ROUTES
+// ===============================
+
+
+
+app.use(
+
+    "/api/auth",
+
+    authRoutes
+
+);
+
+
+
+app.use(
+
+    "/api/products",
+
+    productRoutes
+
+);
+
+
+
+app.use(
+
+    "/api/categories",
+
+    categoryRoutes
+
+);
+
+
+
+app.use(
+
+    "/api/customers",
+
+    customerRoutes
+
+);
+
+
+
+app.use(
+
+    "/api/bills",
+
+    billRoutes
+
+);
+
+
+
+app.use(
+
+    "/api/transactions",
+
+    transactionRoutes
+
+);
+
+
+
+app.use(
+
+    "/api/dashboard",
+
+    dashboardRoutes
+
+);
+
+
+
+
+
+
+
+// ===============================
+// DATABASE CONNECTION
+// ===============================
+
 
 
 mongoose.connect(
 
-process.env.MONGO_URI
+    process.env.MONGO_URI
 
 )
 
 .then(()=>{
 
-console.log("MongoDB Connected");
+
+    console.log(
+        "MongoDB Connected"
+    );
+
 
 })
 
 .catch((error)=>{
 
-console.log(
-"MongoDB Error",
-error
-);
 
-});
+    console.log(
 
+        "MongoDB Error:",
+        error.message
 
-
-
-
-
-
-// =======================
-// ROUTES
-// =======================
-
-
-app.use(
-"/api/auth",
-authRoutes
-);
-
-
-app.use(
-"/api/products",
-productRoutes
-);
-
-
-app.use(
-"/api/categories",
-categoryRoutes
-);
-
-
-app.use(
-"/api/customers",
-customerRoutes
-);
-
-
-app.use(
-"/api/bills",
-billRoutes
-);
-
-
-app.use(
-"/api/dashboard",
-dashboardRoutes
-);
-
-
-app.use(
-"/api/transactions",
-transactionRoutes
-);
-
-
-
-
-
-app.get("/",(req,res)=>{
-
-
-res.json({
-
-message:"Shetkari Agro API Running"
-
-});
+    );
 
 
 });
@@ -195,27 +317,11 @@ message:"Shetkari Agro API Running"
 
 
 
-// error handler
-
-app.use((err,req,res,next)=>{
 
 
-console.log(err);
-
-
-res.status(500).json({
-
-message:
-err.message ||
-"Server Error"
-
-});
-
-
-});
-
-
-
+// ===============================
+// SERVER START
+// ===============================
 
 
 const PORT =
@@ -223,14 +329,21 @@ process.env.PORT || 5000;
 
 
 
-app.listen(PORT,()=>{
+
+app.listen(
+
+    PORT,
+
+    ()=>{
 
 
-console.log(
+        console.log(
 
-`Server running on ${PORT}`
+            `Server running on port ${PORT}`
+
+        );
+
+
+    }
 
 );
-
-
-});

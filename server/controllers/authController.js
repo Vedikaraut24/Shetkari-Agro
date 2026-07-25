@@ -8,10 +8,10 @@ import jwt from "jsonwebtoken";
 // LOGIN ADMIN
 // =======================
 
-export const login = async (req, res) => {
+export const login = async(req,res)=>{
 
 
-    try {
+    try{
 
 
         const {
@@ -21,31 +21,45 @@ export const login = async (req, res) => {
 
 
 
-        // Check input
 
-        if(!username || !password){
+
+        // Validation
+
+        if(
+            !username ||
+            !password
+        ){
+
 
             return res.status(400).json({
 
                 success:false,
 
-                message:"Username and password required"
+                message:
+                "Username and password required"
 
             });
+
 
         }
 
 
 
 
+
+
+
         // Find admin
+
 
         const admin =
         await Admin.findOne({
 
-            username
+            username:username.trim()
 
         });
+
+
 
 
 
@@ -56,7 +70,8 @@ export const login = async (req, res) => {
 
                 success:false,
 
-                message:"Invalid username or password"
+                message:
+                "Invalid username or password"
 
             });
 
@@ -66,9 +81,14 @@ export const login = async (req, res) => {
 
 
 
-        // Compare password
 
-        const isMatch =
+
+
+
+        // Password check
+
+
+        const match =
         await bcrypt.compare(
 
             password,
@@ -79,14 +99,17 @@ export const login = async (req, res) => {
 
 
 
-        if(!isMatch){
+
+
+        if(!match){
 
 
             return res.status(401).json({
 
                 success:false,
 
-                message:"Invalid username or password"
+                message:
+                "Invalid username or password"
 
             });
 
@@ -96,20 +119,64 @@ export const login = async (req, res) => {
 
 
 
-        // Create JWT Token
+
+
+
+        // Check JWT secret
+
+
+        if(!process.env.JWT_SECRET){
+
+
+            console.log(
+                "JWT_SECRET missing"
+            );
+
+
+            return res.status(500).json({
+
+                success:false,
+
+                message:
+                "Server configuration error"
+
+            });
+
+
+        }
+
+
+
+
+
+
+
+        // Create Token
+
+
+        const payload={
+
+
+            id:admin._id,
+
+
+            username:admin.username,
+
+
+            role:
+            admin.role || "admin"
+
+
+        };
+
+
+
+
 
         const token =
         jwt.sign(
 
-            {
-
-                id:admin._id,
-
-                username:admin.username,
-
-                role:admin.role || "admin"
-
-            },
+            payload,
 
             process.env.JWT_SECRET,
 
@@ -125,30 +192,31 @@ export const login = async (req, res) => {
 
 
 
-        res.status(200).json({
+
+
+
+        return res.status(200).json({
+
 
             success:true,
 
-            message:"Login successful",
+
+            message:
+            "Login successful",
+
 
 
             token,
 
 
-            user:{
 
+            user:payload
 
-                id:admin._id,
-
-                username:admin.username,
-
-                role:admin.role || "admin"
-
-
-            }
 
 
         });
+
+
 
 
 
@@ -157,23 +225,27 @@ export const login = async (req, res) => {
     catch(error){
 
 
+
         console.log(
-            "Login Error:",
-            error
+            "LOGIN ERROR:",
+            error.message
         );
 
 
 
-        res.status(500).json({
+        return res.status(500).json({
 
             success:false,
 
-            message:"Server error"
+            message:
+            "Server error"
 
         });
 
 
+
     }
+
 
 
 };

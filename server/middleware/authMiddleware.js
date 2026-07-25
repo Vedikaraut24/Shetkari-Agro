@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 
 
+
 const authMiddleware = (req,res,next)=>{
 
 
@@ -12,37 +13,81 @@ const authMiddleware = (req,res,next)=>{
 
 
 
+        // Check Authorization header
+
         if(!authHeader){
+
 
             return res.status(401).json({
 
                 success:false,
 
-                message:"No token provided"
+                message:"Authentication required"
 
             });
 
+
         }
+
+
+
+
+
+        const parts =
+        authHeader.split(" ");
+
+
+
+
+        if(
+            parts.length !== 2 ||
+            parts[0] !== "Bearer"
+        ){
+
+
+            return res.status(401).json({
+
+                success:false,
+
+                message:"Invalid authorization format"
+
+            });
+
+
+        }
+
 
 
 
 
         const token =
-        authHeader.split(" ")[1];
+        parts[1];
 
 
 
-        if(!token){
 
-            return res.status(401).json({
+
+
+        if(!process.env.JWT_SECRET){
+
+
+            console.log(
+                "JWT_SECRET missing"
+            );
+
+
+            return res.status(500).json({
 
                 success:false,
 
-                message:"Invalid token"
+                message:"Server authentication configuration error"
 
             });
 
+
         }
+
+
 
 
 
@@ -60,11 +105,44 @@ const authMiddleware = (req,res,next)=>{
 
 
 
-        req.user = decoded;
+
+        if(!decoded){
+
+
+            return res.status(401).json({
+
+                success:false,
+
+                message:"Invalid token"
+
+            });
+
+
+        }
+
+
+
+
+
+
+
+        req.user={
+
+            id:decoded.id,
+
+            username:decoded.username,
+
+            role:decoded.role
+
+        };
+
+
 
 
 
         next();
+
+
 
 
 
@@ -73,8 +151,9 @@ const authMiddleware = (req,res,next)=>{
     catch(error){
 
 
+
         console.log(
-            "Auth Error:",
+            "AUTH ERROR:",
             error.message
         );
 
@@ -84,9 +163,11 @@ const authMiddleware = (req,res,next)=>{
 
             success:false,
 
-            message:"Invalid or expired token"
+            message:
+            "Session expired. Please login again."
 
         });
+
 
 
     }

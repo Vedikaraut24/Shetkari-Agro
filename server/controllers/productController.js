@@ -2,15 +2,28 @@ import Product from "../models/Product.js";
 import Category from "../models/Category.js";
 
 
+
+
+// ============================
 // CREATE PRODUCT
+// ============================
 
 export const createProduct = async(req,res)=>{
+
 
     try{
 
 
-        console.log("Received Product Data:");
-        console.log(req.body);
+        console.log(
+            "USER:",
+            req.user
+        );
+
+
+        console.log(
+            "PRODUCT DATA:",
+            req.body
+        );
 
 
 
@@ -33,29 +46,18 @@ export const createProduct = async(req,res)=>{
 
 
 
-        // create category automatically
 
-        if(category){
+        if(!productName || !category){
 
 
-            const categoryExists =
-            await Category.findOne({
+            return res.status(400).json({
 
-                name:category
+                success:false,
+
+                message:
+                "Product name and category required"
 
             });
-
-
-
-            if(!categoryExists){
-
-                await Category.create({
-
-                    name:category
-
-                });
-
-            }
 
 
         }
@@ -64,30 +66,81 @@ export const createProduct = async(req,res)=>{
 
 
 
+
+
+        // Auto create category
+
+        const categoryExists =
+        await Category.findOne({
+
+            name:category
+
+        });
+
+
+
+
+        if(!categoryExists){
+
+
+            await Category.create({
+
+                name:category
+
+            });
+
+
+        }
+
+
+
+
+
+
+
         const product =
         await Product.create({
 
+
             productName,
+
 
             category,
 
-            brand,
 
-            purchasePrice:Number(purchasePrice),
+            brand:brand || "",
 
-            sellingPrice:Number(sellingPrice),
 
-            gst:Number(gst || 0),
+            purchasePrice:
+            Number(purchasePrice),
 
-            currentStock:Number(currentStock || 0),
 
-            minimumStock:Number(minimumStock || 5),
+            sellingPrice:
+            Number(sellingPrice),
 
-            unit:unit || "packet",
 
-            expiryDate,
+            gst:
+            Number(gst || 0),
 
-            supplier
+
+            currentStock:
+            Number(currentStock || 0),
+
+
+            minimumStock:
+            Number(minimumStock || 5),
+
+
+            unit:
+            unit || "packet",
+
+
+            expiryDate:
+            expiryDate || null,
+
+
+            supplier:
+            supplier || ""
 
 
         });
@@ -96,11 +149,16 @@ export const createProduct = async(req,res)=>{
 
 
 
-        res.status(201).json({
+
+        return res.status(201).json({
+
 
             success:true,
 
-            message:"Product Added Successfully",
+
+            message:
+            "Product Added Successfully",
+
 
             product
 
@@ -114,10 +172,65 @@ export const createProduct = async(req,res)=>{
     catch(error){
 
 
+
         console.log(
-            "PRODUCT ERROR:",
-            error
+            "CREATE PRODUCT ERROR:",
+            error.message
         );
+
+
+
+        return res.status(500).json({
+
+            success:false,
+
+            message:error.message
+
+        });
+
+
+
+    }
+
+
+
+};
+
+
+
+
+
+
+
+// ============================
+// GET ALL PRODUCTS
+// ============================
+
+export const getProducts = async(req,res)=>{
+
+
+    try{
+
+
+        const products =
+        await Product.find()
+
+        .sort({
+
+            createdAt:-1
+
+        });
+
+
+
+
+        res.json(products);
+
+
+
+    }
+
+    catch(error){
 
 
         res.status(500).json({
@@ -139,22 +252,366 @@ export const createProduct = async(req,res)=>{
 
 
 
-// GET PRODUCTS
 
-export const getProducts = async(req,res)=>{
+
+// ============================
+// GET PRODUCT BY ID
+// ============================
+
+export const getProductById = async(req,res)=>{
 
 
     try{
 
 
-        const products =
-        await Product.find()
+        const product =
+        await Product.findById(
 
-        .sort({
+            req.params.id
 
-            createdAt:-1
+        );
+
+
+
+
+        if(!product){
+
+
+            return res.status(404).json({
+
+                success:false,
+
+                message:
+                "Product not found"
+
+            });
+
+
+        }
+
+
+
+
+
+        res.json(product);
+
+
+
+    }
+
+    catch(error){
+
+
+        res.status(500).json({
+
+            success:false,
+
+            message:error.message
 
         });
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+
+
+// ============================
+// UPDATE PRODUCT
+// ============================
+
+export const updateProduct = async(req,res)=>{
+
+
+    try{
+
+
+        const product =
+        await Product.findById(
+
+            req.params.id
+
+        );
+
+
+
+
+        if(!product){
+
+
+            return res.status(404).json({
+
+                success:false,
+
+                message:
+                "Product not found"
+
+            });
+
+
+        }
+
+
+
+
+
+
+        const updated =
+        await Product.findByIdAndUpdate(
+
+
+            req.params.id,
+
+
+            {
+
+
+                ...req.body,
+
+
+                purchasePrice:
+                Number(req.body.purchasePrice),
+
+
+                sellingPrice:
+                Number(req.body.sellingPrice),
+
+
+                gst:
+                Number(req.body.gst || 0),
+
+
+                currentStock:
+                Number(req.body.currentStock || 0),
+
+
+                minimumStock:
+                Number(req.body.minimumStock || 5)
+
+
+
+            },
+
+
+            {
+
+
+                new:true,
+
+
+                runValidators:true
+
+
+            }
+
+
+        );
+
+
+
+
+
+
+
+        res.json({
+
+
+            success:true,
+
+
+            message:
+            "Product Updated",
+
+
+            product:updated
+
+
+
+        });
+
+
+
+    }
+
+    catch(error){
+
+
+        res.status(500).json({
+
+            success:false,
+
+            message:error.message
+
+        });
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+
+
+// ============================
+// DELETE PRODUCT
+// ============================
+
+export const deleteProduct = async(req,res)=>{
+
+
+    try{
+
+
+        const product =
+        await Product.findByIdAndDelete(
+
+            req.params.id
+
+        );
+
+
+
+
+        if(!product){
+
+
+            return res.status(404).json({
+
+                success:false,
+
+                message:
+                "Product not found"
+
+            });
+
+
+        }
+
+
+
+
+
+
+        res.json({
+
+
+            success:true,
+
+
+            message:
+            "Product deleted"
+
+
+
+        });
+
+
+
+
+    }
+
+    catch(error){
+
+
+        res.status(500).json({
+
+            success:false,
+
+            message:error.message
+
+        });
+
+
+    }
+
+
+};
+
+
+
+
+
+
+
+// ============================
+// SEARCH PRODUCTS
+// ============================
+
+export const searchProducts = async(req,res)=>{
+
+
+    try{
+
+
+        const keyword =
+        req.query.keyword || "";
+
+
+
+        const products =
+        await Product.find({
+
+            $or:[
+
+
+                {
+
+                    productName:{
+
+                        $regex:keyword,
+
+                        $options:"i"
+
+                    }
+
+                },
+
+
+                {
+
+                    category:{
+
+                        $regex:keyword,
+
+                        $options:"i"
+
+                    }
+
+                },
+
+
+                {
+
+                    brand:{
+
+                        $regex:keyword,
+
+                        $options:"i"
+
+                    }
+
+                }
+
+
+            ]
+
+
+        });
+
 
 
 
@@ -184,92 +641,22 @@ export const getProducts = async(req,res)=>{
 
 
 
-// UPDATE PRODUCT
 
-export const updateProduct = async(req,res)=>{
+// ============================
+// IMPORT PLACEHOLDER
+// ============================
 
-
-    try{
-
-
-        const product =
-        await Product.findByIdAndUpdate(
-
-            req.params.id,
-
-            req.body,
-
-            {
-
-                new:true
-
-            }
-
-        );
+export const importProducts = async(req,res)=>{
 
 
-        res.json(product);
+    return res.status(501).json({
 
+        success:false,
 
+        message:
+        "Import feature not enabled"
 
-    }
-
-    catch(error){
-
-
-        res.status(500).json({
-
-            message:error.message
-
-        });
-
-
-    }
-
-
-};
-
-
-
-
-
-
-// DELETE PRODUCT
-
-
-export const deleteProduct = async(req,res)=>{
-
-
-    try{
-
-
-        await Product.findByIdAndDelete(
-
-            req.params.id
-
-        );
-
-
-        res.json({
-
-            message:"Deleted"
-
-        });
-
-
-    }
-
-    catch(error){
-
-
-        res.status(500).json({
-
-            message:error.message
-
-        });
-
-
-    }
+    });
 
 
 };

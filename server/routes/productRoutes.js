@@ -6,13 +6,18 @@ import {
 createProduct,
 getProducts,
 updateProduct,
-deleteProduct
+deleteProduct,
+getProductById,
+searchProducts,
+importProducts
 
 }
+
 from "../controllers/productController.js";
 
 
 import authMiddleware from "../middleware/authMiddleware.js";
+import roleMiddleware from "../middleware/roleMiddleware.js";
 
 
 
@@ -20,48 +25,59 @@ const router = express.Router();
 
 
 
-// all product APIs require login
-
 router.use(authMiddleware);
 
 
 
-router.post(
-
-    "/",
-
-    createProduct
-
+router.get(
+"/",
+getProducts
 );
 
 
 
 router.get(
+"/search",
+searchProducts
+);
 
-    "/",
 
-    getProducts
 
+router.get(
+"/:id",
+getProductById
+);
+
+
+
+router.post(
+"/",
+roleMiddleware("admin"),
+createProduct
 );
 
 
 
 router.put(
-
-    "/:id",
-
-    updateProduct
-
+"/:id",
+roleMiddleware("admin"),
+updateProduct
 );
 
 
 
 router.delete(
+"/:id",
+roleMiddleware("admin"),
+deleteProduct
+);
 
-    "/:id",
 
-    deleteProduct
 
+router.post(
+"/import",
+roleMiddleware("admin"),
+importProducts
 );
 
 
