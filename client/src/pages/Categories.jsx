@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-import CategoryForm from "../components/categories/CategoryForm";
-import CategoryTable from "../components/categories/CategoryTable";
-
 import {
     getCategories,
     createCategory,
@@ -11,180 +8,542 @@ import {
     deleteCategory
 } from "../services/categoryService";
 
-export default function Categories() {
 
-    const [categories, setCategories] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [search, setSearch] = useState("");
 
-    const loadCategories = async () => {
+export default function Categories(){
 
-        try {
 
-            const data = await getCategories();
+    const [categories,setCategories] = useState([]);
 
-            setCategories(data);
 
-        }
-        catch (err) {
+    const [categoryName,setCategoryName] = useState("");
 
-            console.log(err);
 
-            toast.error("Failed to load categories");
 
-        }
+    const [editId,setEditId] = useState(null);
 
-    };
 
-    useEffect(() => {
+
+
+
+    useEffect(()=>{
+
 
         loadCategories();
 
-    }, []);
 
-    const handleSubmit = async (data) => {
+    },[]);
 
-        try {
 
-            if (selectedCategory) {
 
-                await updateCategory(
-                    selectedCategory._id,
-                    data
-                );
 
-                toast.success("Category Updated");
 
-            }
-            else {
 
-                await createCategory(data);
 
-                toast.success("Category Added");
+    const loadCategories = async()=>{
 
-            }
 
-            setSelectedCategory(null);
+        try{
 
-            loadCategories();
+
+            const data =
+            await getCategories();
+
+
+            setCategories(data);
+
+
 
         }
-        catch (err) {
 
-            console.log(err);
+        catch(error){
 
-            toast.error("Operation Failed");
+
+            console.log(error);
+
+
+            toast.error(
+                "Failed to load categories"
+            );
+
 
         }
+
 
     };
 
-    const handleDelete = async (category) => {
 
-        if (!window.confirm(`Delete ${category.name}?`))
+
+
+
+
+
+
+
+    const handleSubmit = async(e)=>{
+
+
+        e.preventDefault();
+
+
+
+        if(!categoryName.trim()){
+
+
+            toast.error(
+                "Category name required"
+            );
+
+
             return;
 
-        try {
 
-            await deleteCategory(category._id);
+        }
 
-            toast.success("Category Deleted");
+
+
+
+        try{
+
+
+
+            if(editId){
+
+
+                await updateCategory(
+
+                    editId,
+
+                    {
+                        name:categoryName
+                    }
+
+                );
+
+
+                toast.success(
+                    "Category updated"
+                );
+
+
+            }
+
+            else{
+
+
+                await createCategory({
+
+                    name:categoryName
+
+                });
+
+
+
+                toast.success(
+                    "Category added"
+                );
+
+
+            }
+
+
+
+
+
+            setCategoryName("");
+
+            setEditId(null);
+
 
             loadCategories();
 
-        }
-        catch (err) {
 
-            toast.error("Delete Failed");
 
         }
+
+        catch(error){
+
+
+            console.log(error);
+
+
+            toast.error(
+
+                error.response?.data?.message ||
+
+                "Operation failed"
+
+            );
+
+
+        }
+
 
     };
 
-    const filteredCategories = categories.filter(category =>
-        category.name
-            .toLowerCase()
-            .includes(search.toLowerCase())
-    );
 
-    return (
 
-        <div className="p-6">
+
+
+
+
+
+
+    const handleEdit=(category)=>{
+
+
+        setEditId(
+            category._id
+        );
+
+
+        setCategoryName(
+
+            category.name
+
+        );
+
+
+    };
+
+
+
+
+
+
+
+
+    const handleDelete=async(id)=>{
+
+
+        try{
+
+
+            await deleteCategory(id);
+
+
+            toast.success(
+                "Category deleted"
+            );
+
+
+            loadCategories();
+
+
+        }
+
+        catch(error){
+
+
+            console.log(error);
+
+
+            toast.error(
+                "Delete failed"
+            );
+
+
+        }
+
+
+    };
+
+
+
+
+
+
+
+
+
+    return(
+
+
+        <div className="space-y-8">
+
+
 
             <h1 className="text-3xl font-bold text-green-700">
 
-                🏷 Categories
+                Category Management
 
             </h1>
 
-            <p className="text-gray-500 mb-6">
 
-                Manage Product Categories
 
-            </p>
 
-            <div className="grid md:grid-cols-4 gap-5 mb-6">
 
-                <div className="bg-white shadow rounded-2xl p-5">
+            {/* Add Category */}
 
-                    <p>Total Categories</p>
 
-                    <h2 className="text-3xl font-bold text-green-700">
+            <div className="bg-white shadow rounded-xl p-6">
 
-                        {categories.length}
 
-                    </h2>
+                <form
 
-                </div>
+                onSubmit={handleSubmit}
 
-            </div>
+                className="flex flex-col md:flex-row gap-4"
 
-            <div className="grid xl:grid-cols-3 gap-6">
+                >
 
-                <CategoryForm
 
-                    onSubmit={handleSubmit}
-
-                    selectedCategory={selectedCategory}
-
-                />
-
-                <div className="xl:col-span-2">
 
                     <input
 
-                        type="text"
+                    type="text"
 
-                        placeholder="Search Category"
+                    placeholder="Enter category name"
 
-                        value={search}
+                    value={categoryName}
 
-                        onChange={(e) =>
+                    onChange={(e)=>
+                    
+                        setCategoryName(
+                            e.target.value
+                        )
 
-                            setSearch(e.target.value)
+                    }
 
-                        }
-
-                        className="border w-full p-3 rounded-xl mb-4"
-
-                    />
-
-                    <CategoryTable
-
-                        categories={filteredCategories}
-
-                        onEdit={setSelectedCategory}
-
-                        onDelete={handleDelete}
+                    className="border p-3 rounded flex-1"
 
                     />
 
-                </div>
+
+
+
+
+                    <button
+
+                    className="bg-green-700 text-white px-6 py-3 rounded"
+
+                    >
+
+                    {
+                        editId ?
+
+                        "Update Category"
+
+                        :
+
+                        "Add Category"
+                    }
+
+
+                    </button>
+
+
+
+                </form>
+
 
             </div>
 
+
+
+
+
+
+
+
+
+            {/* Category List */}
+
+
+
+            <div className="bg-white shadow rounded-xl overflow-hidden">
+
+
+                <table className="w-full">
+
+
+                    <thead className="bg-green-700 text-white">
+
+
+                        <tr>
+
+
+                            <th className="p-3 text-left">
+
+                                Category Name
+
+                            </th>
+
+
+                            <th className="p-3 text-left">
+
+                                Created Date
+
+                            </th>
+
+
+                            <th className="p-3">
+
+                                Actions
+
+                            </th>
+
+
+                        </tr>
+
+
+                    </thead>
+
+
+
+
+
+
+                    <tbody>
+
+
+                    {
+
+                    categories.length === 0 ?
+
+
+                    (
+
+                        <tr>
+
+                            <td
+
+                            colSpan="3"
+
+                            className="text-center p-5"
+
+                            >
+
+                            No categories found
+
+                            </td>
+
+                        </tr>
+
+                    )
+
+
+                    :
+
+
+                    categories.map((category)=>(
+
+
+
+                        <tr
+
+                        key={category._id}
+
+                        className="border-b"
+
+                        >
+
+
+
+                            <td className="p-3">
+
+                                {category.name}
+
+                            </td>
+
+
+
+
+
+                            <td className="p-3">
+
+
+                                {
+
+                                new Date(
+                                    category.createdAt
+                                )
+                                .toLocaleDateString(
+                                    "en-IN"
+                                )
+
+                                }
+
+
+                            </td>
+
+
+
+
+
+
+                            <td className="p-3 space-x-2 text-center">
+
+
+
+                                <button
+
+                                onClick={()=>handleEdit(category)}
+
+                                className="bg-blue-600 text-white px-3 py-1 rounded"
+
+                                >
+
+                                Edit
+
+                                </button>
+
+
+
+
+
+
+                                <button
+
+                                onClick={()=>
+                                    handleDelete(
+                                        category._id
+                                    )
+                                }
+
+                                className="bg-red-600 text-white px-3 py-1 rounded"
+
+                                >
+
+                                Delete
+
+                                </button>
+
+
+
+                            </td>
+
+
+
+                        </tr>
+
+
+
+                    ))
+
+
+                    }
+
+
+
+                    </tbody>
+
+
+
+                </table>
+
+
+
+            </div>
+
+
+
+
+
         </div>
 
+
     );
+
 
 }

@@ -2,44 +2,48 @@ import express from "express";
 
 import {
 
-getCategories,
-createCategory,
-updateCategory,
-deleteCategory
+    getCategories,
+    createCategory,
+    updateCategory,
+    deleteCategory
 
-}
-from "../controllers/categoryController.js";
+} from "../controllers/categoryController.js";
 
 
-const router =
-express.Router();
+import authMiddleware from "../middleware/authMiddleware.js";
+
+
+const router = express.Router();
+
+
+router.use(authMiddleware);
 
 
 
 router.get(
-"/",
-getCategories
+    "/",
+    getCategories
 );
 
 
 
 router.post(
-"/",
-createCategory
+    "/",
+    createCategory
 );
 
 
 
 router.put(
-"/:id",
-updateCategory
+    "/:id",
+    updateCategory
 );
 
 
 
 router.delete(
-"/:id",
-deleteCategory
+    "/:id",
+    deleteCategory
 );
 
 

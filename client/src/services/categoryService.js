@@ -1,11 +1,11 @@
-import axios from "axios";
+import API from "./api";
 
-const API_URL = "http://localhost:5000/api/categories";
 
 
 export const getCategories = async()=>{
 
-    const res = await axios.get(API_URL);
+    const res =
+    await API.get("/categories");
 
     return res.data;
 
@@ -15,52 +15,59 @@ export const getCategories = async()=>{
 
 export const createCategory = async(data)=>{
 
-    console.log("Sending Category:",data);
 
-    const res = await axios.post(
+    const res =
+    await API.post(
 
-        API_URL,
-
-        data,
-
-        {
-            headers:{
-                "Content-Type":"application/json"
-            }
-        }
-
-    );
-
-    return res.data;
-
-};
-
-
-
-export const updateCategory = async(id,data)=>{
-
-    const res = await axios.put(
-
-        `${API_URL}/${id}`,
+        "/categories",
 
         data
 
     );
 
+
     return res.data;
+
 
 };
 
 
 
-export const deleteCategory = async(id)=>{
 
-    const res = await axios.delete(
+export const updateCategory = async(id,data)=>{
 
-        `${API_URL}/${id}`
+
+    const res =
+    await API.put(
+
+        `/categories/${id}`,
+
+        data
 
     );
 
+
     return res.data;
+
+
+};
+
+
+
+
+
+export const deleteCategory = async(id)=>{
+
+
+    const res =
+    await API.delete(
+
+        `/categories/${id}`
+
+    );
+
+
+    return res.data;
+
 
 };

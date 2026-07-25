@@ -1,26 +1,43 @@
 import mongoose from "mongoose";
 
 
-const categorySchema =
-new mongoose.Schema({
+const categorySchema = new mongoose.Schema(
 
-    name:{
+    {
 
-        type:String,
+        name:{
 
-        required:true,
+            type:String,
 
-        unique:true,
+            required:true,
 
-        trim:true
+            unique:true,
+
+            trim:true,
+
+            minlength:2,
+
+            maxlength:50
+
+        }
+
+    },
+
+    {
+
+        timestamps:true
 
     }
 
+);
 
-});
 
 
-export default mongoose.model(
+// Prevent duplicate model error in development
+
+export default mongoose.models.Category ||
+
+mongoose.model(
     "Category",
     categorySchema
 );

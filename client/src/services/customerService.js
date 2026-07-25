@@ -1,108 +1,67 @@
-import axios from "axios";
+import API from "./api";
 
 
-const API_URL =
-
-"http://localhost:5000/api/customers";
-
-
-
-
-// GET CUSTOMERS
 
 export const getCustomers = async()=>{
 
-    const response = await axios.get(
-        API_URL
-    );
+    const res =
+    await API.get("/customers");
 
-    return response.data;
-
-};
-
-
-
-
-
-// CREATE CUSTOMER
-
-export const createCustomer = async(customer)=>{
-
-    const response = await axios.post(
-
-        API_URL,
-
-        customer
-
-    );
-
-    return response.data;
+    return res.data;
 
 };
 
 
 
+export const createCustomer = async(data)=>{
 
+    const res =
+    await API.post(
 
-// UPDATE CUSTOMER
+        "/customers",
 
-export const updateCustomer = async(id,customer)=>{
-
-    const response = await axios.put(
-
-        `${API_URL}/${id}`,
-
-        customer
+        data
 
     );
 
-    return response.data;
+    return res.data;
 
 };
 
 
 
+export const updateCustomer = async(id,data)=>{
 
 
-// DELETE CUSTOMER
+    const res =
+    await API.put(
+
+        `/customers/${id}`,
+
+        data
+
+    );
+
+
+    return res.data;
+
+
+};
+
+
 
 export const deleteCustomer = async(id)=>{
 
-    const response = await axios.delete(
 
-        `${API_URL}/${id}`
+    const res =
+    await API.delete(
 
-    );
-
-    return response.data;
-
-};
-
-
-
-
-
-// SEARCH CUSTOMER
-
-export const searchCustomers = async(keyword)=>{
-
-
-    const response = await axios.get(
-
-        `${API_URL}/search`,
-
-        {
-
-            params:{
-                keyword
-            }
-
-        }
+        `/customers/${id}`
 
     );
 
 
-    return response.data;
+    return res.data;
 
 
 };
