@@ -17,7 +17,14 @@ import customerRoutes from "./routes/customerRoutes.js";
 import billRoutes from "./routes/billRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
-import reportRoutes from "./routes/reportRoutes.js";
+
+
+// REPORT REMOVE
+// import reportRoutes from "./routes/reportRoutes.js";
+
+
+// PURCHASE ADD
+import purchaseRoutes from "./routes/purchaseRoutes.js";
 
 
 
@@ -30,104 +37,52 @@ const app = express();
 
 
 // ===============================
-// CORS CONFIGURATION
+// CORS
 // ===============================
 
 
 const allowedOrigins = [
 
-
     "http://localhost:5173",
-
-
-    "https://shetkari-agro.vercel.app",
-
-
-    "https://shetkari-agro-bj06ci0ea-vedika9.vercel.app",
-
 
     "https://shetkari-agro-kx0h3vip4-vedika9.vercel.app",
 
-
     "https://shetkari-agro-6y8egshqd-vedika9.vercel.app"
-
 
 ];
 
 
 
-
-
 app.use(
 
-    cors({
+cors({
 
-        origin:(origin,callback)=>{
+    origin:true,
 
+    credentials:true,
 
-            // allow postman/mobile apps
+    methods:[
 
-            if(!origin){
+        "GET",
+        "POST",
+        "PUT",
+        "DELETE",
+        "PATCH",
+        "OPTIONS"
 
-                return callback(null,true);
+    ],
 
-            }
+    allowedHeaders:[
 
+        "Content-Type",
 
+        "Authorization"
 
-            if(
+    ]
 
-                allowedOrigins.includes(origin)
-
-            ){
-
-                return callback(null,true);
-
-            }
-
-
-
-            console.log(
-
-                "Blocked CORS Origin:",
-
-                origin
-
-            );
-
-
-            return callback(null,false);
-
-
-        },
-
-
-        credentials:true,
-
-
-        methods:[
-
-            "GET",
-            "POST",
-            "PUT",
-            "DELETE",
-            "PATCH"
-
-        ],
-
-
-        allowedHeaders:[
-
-            "Content-Type",
-
-            "Authorization"
-
-        ]
-
-    })
+})
 
 );
-
 
 
 
@@ -139,9 +94,23 @@ app.use(
 // ===============================
 
 
+app.use(express.json());
+
+
+app.use(express.urlencoded({
+
+    extended:true
+
+}));
+
+
 app.use(
 
-    express.json()
+helmet({
+
+    crossOriginResourcePolicy:false
+
+})
 
 );
 
@@ -149,31 +118,7 @@ app.use(
 
 app.use(
 
-    express.urlencoded({
-
-        extended:true
-
-    })
-
-);
-
-
-
-app.use(
-
-    helmet({
-
-        crossOriginResourcePolicy:false
-
-    })
-
-);
-
-
-
-app.use(
-
-    morgan("dev")
+morgan("dev")
 
 );
 
@@ -188,27 +133,19 @@ app.use(
 // ===============================
 
 
-app.get(
-
-    "/",
-
-    (req,res)=>{
+app.get("/",(req,res)=>{
 
 
-        res.status(200).json({
+res.json({
 
-            success:true,
+    success:true,
 
-            message:
-            "Shetkari Agro API Running"
+    message:"Shetkari Agro API Running"
 
-        });
+});
 
 
-    }
-
-);
-
+});
 
 
 
@@ -221,12 +158,11 @@ app.get(
 // ===============================
 
 
-
 app.use(
 
-    "/api/auth",
+"/api/auth",
 
-    authRoutes
+authRoutes
 
 );
 
@@ -234,19 +170,9 @@ app.use(
 
 app.use(
 
-    "/api/products",
+"/api/products",
 
-    productRoutes
-
-);
-
-
-
-app.use(
-
-    "/api/categories",
-
-    categoryRoutes
+productRoutes
 
 );
 
@@ -254,19 +180,9 @@ app.use(
 
 app.use(
 
-    "/api/customers",
+"/api/categories",
 
-    customerRoutes
-
-);
-
-
-
-app.use(
-
-    "/api/bills",
-
-    billRoutes
+categoryRoutes
 
 );
 
@@ -274,19 +190,9 @@ app.use(
 
 app.use(
 
-    "/api/transactions",
+"/api/customers",
 
-    transactionRoutes
-
-);
-
-
-
-app.use(
-
-    "/api/dashboard",
-
-    dashboardRoutes
+customerRoutes
 
 );
 
@@ -294,9 +200,42 @@ app.use(
 
 app.use(
 
-    "/api/reports",
+"/api/bills",
 
-    reportRoutes
+billRoutes
+
+);
+
+
+
+app.use(
+
+"/api/transactions",
+
+transactionRoutes
+
+);
+
+
+
+app.use(
+
+"/api/dashboard",
+
+dashboardRoutes
+
+);
+
+
+
+
+// PURCHASE ROUTE
+
+app.use(
+
+"/api/purchases",
+
+purchaseRoutes
 
 );
 
@@ -312,73 +251,26 @@ app.use(
 // ===============================
 
 
-app.use(
-
-    (err,req,res,next)=>{
+app.use((err,req,res,next)=>{
 
 
-        console.log(
+console.log(
 
-            "SERVER ERROR:",
+"ERROR:",
 
-            err.message
-
-        );
-
-
-        res.status(500).json({
-
-            success:false,
-
-            message:err.message
-
-        });
-
-
-    }
+err.message
 
 );
 
 
 
+res.status(500).json({
 
+success:false,
 
+message:err.message
 
-
-
-// ===============================
-// DATABASE CONNECTION
-// ===============================
-
-
-mongoose.connect(
-
-    process.env.MONGO_URI
-
-)
-
-.then(()=>{
-
-
-    console.log(
-
-        "MongoDB Connected"
-
-    );
-
-
-})
-
-.catch((error)=>{
-
-
-    console.log(
-
-        "MongoDB ERROR:",
-
-        error.message
-
-    );
+});
 
 
 });
@@ -391,30 +283,65 @@ mongoose.connect(
 
 
 // ===============================
-// SERVER START
+// DATABASE
 // ===============================
 
 
-const PORT =
+mongoose.connect(
 
-process.env.PORT || 5000;
+process.env.MONGO_URI
 
+)
 
-
-app.listen(
-
-    PORT,
-
-    ()=>{
+.then(()=>{
 
 
-        console.log(
+console.log(
 
-            `Server running on port ${PORT}`
-
-        );
-
-
-    }
+"MongoDB Connected"
 
 );
+
+
+})
+
+.catch(error=>{
+
+
+console.log(
+
+"MongoDB Error:",
+
+error.message
+
+);
+
+
+});
+
+
+
+
+
+
+
+// ===============================
+// SERVER
+// ===============================
+
+
+const PORT = process.env.PORT || 5000;
+
+
+
+app.listen(PORT,()=>{
+
+
+console.log(
+
+`Server running on port ${PORT}`
+
+);
+
+
+});

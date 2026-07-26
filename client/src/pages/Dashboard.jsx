@@ -8,7 +8,8 @@ import {
     FaExclamationTriangle,
     FaRupeeSign,
     FaChartLine,
-    FaMoneyBillWave
+    FaMoneyBillWave,
+    FaTruckLoading
 } from "react-icons/fa";
 
 import { CalendarDays, RefreshCw } from "lucide-react";
@@ -25,501 +26,599 @@ import RecentBills from "../components/dashboard/RecentBills";
 export default function Dashboard(){
 
 
-    const [loading,setLoading] = useState(false);
+const [loading,setLoading]=useState(false);
 
 
 
-    const [data,setData] = useState({
+const [data,setData]=useState({
 
-        totalProducts:0,
+    totalProducts:0,
 
-        totalCustomers:0,
+    totalCustomers:0,
 
-        totalBills:0,
+    totalBills:0,
 
-        lowStock:0,
 
-        inventoryValue:0,
+    totalPurchases:0,
 
-        totalSales:0,
+    purchaseAmount:0,
 
-        todaySales:0,
 
+    lowStock:0,
 
-        salesChart:[],
 
-        categoryChart:[],
+    inventoryValue:0,
 
-        lowStockProducts:[],
 
-        recentBills:[]
+    totalSales:0,
 
-    });
+    todaySales:0,
 
 
+    salesChart:[],
 
-    const loadDashboard = async()=>{
+    categoryChart:[],
 
+    lowStockProducts:[],
 
-        try{
+    recentBills:[]
 
+});
 
-            setLoading(true);
 
 
 
-            const response =
-            await getDashboard();
 
+const loadDashboard=async()=>{
 
 
-            setData({
+try{
 
-                totalProducts:
-                response.totalProducts ?? 0,
 
+setLoading(true);
 
-                totalCustomers:
-                response.totalCustomers ?? 0,
 
 
-                totalBills:
-                response.totalBills ?? 0,
+const response=await getDashboard();
 
 
-                lowStock:
-                response.lowStock ?? 0,
 
+console.log(
+"Dashboard Response:",
+response
+);
 
-                inventoryValue:
-                response.inventoryValue ?? 0,
 
 
-                totalSales:
-                response.totalSales ?? 0,
+setData({
 
 
-                todaySales:
-                response.todaySales ?? 0,
+totalProducts:
+response.totalProducts ?? 0,
 
 
+totalCustomers:
+response.totalCustomers ?? 0,
 
-                salesChart:
-                response.salesChart ?? [],
 
+totalBills:
+response.totalBills ?? 0,
 
 
-                categoryChart:
-                response.categoryChart ?? [],
 
 
+// PURCHASE DATA
 
-                lowStockProducts:
-                response.lowStockProducts ?? [],
+totalPurchases:
+response.totalPurchases ?? 0,
 
 
+purchaseAmount:
+response.purchaseAmount ?? 0,
 
-                recentBills:
-                response.recentBills ?? []
 
-            });
 
 
+// STOCK
 
-        }
-        catch(error){
+lowStock:
+response.lowStock ?? 0,
 
 
-            console.log(
-                "Dashboard Error:",
-                error
-            );
+inventoryValue:
+response.inventoryValue ?? 0,
 
 
-            toast.error(
-                "Failed to load dashboard"
-            );
 
 
-        }
-        finally{
+// SALES
 
+totalSales:
+response.totalSales ?? 0,
 
-            setLoading(false);
 
+todaySales:
+response.todaySales ?? 0,
 
-        }
 
 
-    };
 
+// CHARTS
 
+salesChart:
+response.salesChart ?? [],
 
 
-    useEffect(()=>{
+categoryChart:
+response.categoryChart ?? [],
 
-        loadDashboard();
 
-    },[]);
 
+lowStockProducts:
+response.lowStockProducts ?? [],
 
 
 
+recentBills:
+response.recentBills ?? []
 
-    return (
 
-        <div className="space-y-8">
+});
 
 
 
-            {/* Header */}
+}
 
-            <div className="
-            bg-gradient-to-r
-            from-green-700
-            to-green-600
-            rounded-2xl
-            p-6
-            md:p-8
-            text-white
-            shadow-lg
-            ">
+catch(error){
 
 
-                <div className="
-                flex
-                justify-between
-                items-center
-                flex-wrap
-                gap-5
-                ">
+console.log(
+"Dashboard Error:",
+error
+);
 
 
-                    <div>
+toast.error(
+"Failed to load dashboard"
+);
 
 
-                        <h1 className="
-                        text-2xl
-                        md:text-4xl
-                        font-bold
-                        ">
+}
 
-                            🌾 Welcome, Rushikesh Band 👋
+finally{
 
-                        </h1>
+setLoading(false);
 
+}
 
-                        <p className="
-                        text-green-100
-                        mt-3
-                        ">
 
-                            Welcome to 
-                            <strong>
-                            {" "}शेतकरी अॅग्रो
-                            </strong>
-                            {" "}Inventory Management System
+};
 
-                        </p>
 
 
-                    </div>
 
 
+useEffect(()=>{
 
 
-                    <div className="
-                    bg-white/20
-                    px-5
-                    py-4
-                    rounded-xl
-                    ">
+loadDashboard();
 
 
-                        <div className="
-                        flex
-                        items-center
-                        gap-2
-                        ">
+},[]);
 
 
-                            <CalendarDays size={20}/>
 
 
-                            <span>
 
-                                {
-                                new Date()
-                                .toLocaleDateString(
-                                    "en-IN",
-                                    {
-                                    weekday:"long",
-                                    year:"numeric",
-                                    month:"long",
-                                    day:"numeric"
-                                    }
-                                )
-                                }
 
-                            </span>
 
+return (
 
-                        </div>
+<div className="space-y-8">
 
 
-                    </div>
 
+<div className="
+bg-gradient-to-r
+from-green-700
+to-green-600
+rounded-2xl
+p-6
+md:p-8
+text-white
+shadow-lg
+">
 
-                </div>
 
+<div className="
+flex
+justify-between
+items-center
+flex-wrap
+gap-5
+">
 
-            </div>
 
+<div>
 
 
+<h1 className="
+text-2xl
+md:text-4xl
+font-bold
+">
 
+🌾 Welcome, Rushikesh Band 👋
 
-            {/* Refresh Button */}
+</h1>
 
-            <div className="flex justify-end">
 
+<p className="text-green-100 mt-3">
 
-                <button
+Welcome to 
+<strong>
+{" "}शेतकरी अॅग्रो
+</strong>
+{" "}Inventory Management System
 
-                onClick={loadDashboard}
+</p>
 
-                disabled={loading}
 
-                className="
-                flex
-                items-center
-                gap-2
-                bg-green-700
-                text-white
-                px-4
-                py-2
-                rounded-lg
-                hover:bg-green-800
-                "
+</div>
 
-                >
 
 
-                    <RefreshCw
-                    size={18}
-                    className={
-                    loading ? "animate-spin" : ""
-                    }
-                    />
 
+<div className="
+bg-white/20
+px-5
+py-4
+rounded-xl
+">
 
-                    Refresh
 
+<div className="
+flex
+items-center
+gap-2
+">
 
-                </button>
 
+<CalendarDays size={20}/>
 
-            </div>
 
+<span>
 
+{
+new Date()
+.toLocaleDateString(
+"en-IN",
+{
+weekday:"long",
+year:"numeric",
+month:"long",
+day:"numeric"
+}
+)
+}
 
+</span>
 
 
+</div>
 
-            {/* Cards */}
 
+</div>
 
-            <div className="
-            grid
-            xl:grid-cols-4
-            md:grid-cols-2
-            gap-6
-            ">
 
+</div>
 
 
-                <StatsCard
+</div>
 
-                title="Products"
 
-                value={data.totalProducts}
 
-                icon={<FaBoxOpen/>}
 
-                color="green"
 
-                />
 
+<div className="flex justify-end">
 
 
-                <StatsCard
+<button
 
-                title="Customers"
+onClick={loadDashboard}
 
-                value={data.totalCustomers}
+disabled={loading}
 
-                icon={<FaUsers/>}
+className="
+flex
+items-center
+gap-2
+bg-green-700
+text-white
+px-4
+py-2
+rounded-lg
+"
 
-                color="blue"
 
-                />
+>
 
 
+<RefreshCw
 
-                <StatsCard
+size={18}
 
-                title="Bills"
+className={
+loading
+?
+"animate-spin"
+:
+""
+}
 
-                value={data.totalBills}
+/>
 
-                icon={<FaShoppingCart/>}
 
-                color="purple"
+Refresh
 
-                />
 
+</button>
 
 
-                <StatsCard
+</div>
 
-                title="Low Stock"
 
-                value={data.lowStock}
 
-                icon={<FaExclamationTriangle/>}
 
-                color="red"
 
-                />
 
 
 
-                <StatsCard
 
-                title="Inventory Value"
+<div className="
+grid
+xl:grid-cols-4
+md:grid-cols-2
+gap-6
+">
 
-                value={
-                `₹ ${Number(
-                    data.inventoryValue
-                ).toLocaleString("en-IN")}`
-                }
 
-                icon={<FaRupeeSign/>}
 
-                color="yellow"
 
-                />
 
+<StatsCard
 
+title="Products"
 
-                <StatsCard
+value={data.totalProducts}
 
-                title="Today's Sales"
+icon={<FaBoxOpen/>}
 
-                value={
-                `₹ ${Number(
-                    data.todaySales
-                ).toLocaleString("en-IN")}`
-                }
+color="green"
 
-                icon={<FaChartLine/>}
+/>
 
-                color="green"
 
-                />
 
 
 
-                <StatsCard
+<StatsCard
 
-                title="Total Sales"
+title="Customers"
 
-                value={
-                `₹ ${Number(
-                    data.totalSales
-                ).toLocaleString("en-IN")}`
-                }
+value={data.totalCustomers}
 
-                icon={<FaMoneyBillWave/>}
+icon={<FaUsers/>}
 
-                color="blue"
+color="blue"
 
-                />
+/>
 
 
 
-            </div>
 
 
+<StatsCard
 
+title="Bills"
 
+value={data.totalBills}
 
+icon={<FaShoppingCart/>}
 
-            {/* Charts */}
+color="purple"
 
+/>
 
-            <div className="
-            grid
-            xl:grid-cols-2
-            gap-6
-            ">
 
 
-                <SalesChart
 
-                data={data.salesChart}
 
-                />
+<StatsCard
 
+title="Purchases"
 
-                <CategoryPieChart
+value={data.totalPurchases}
 
-                data={data.categoryChart}
+icon={<FaTruckLoading/>}
 
-                />
+color="green"
 
+/>
 
-            </div>
 
 
 
 
+<StatsCard
 
+title="Purchase Amount"
 
-            {/* Tables */}
+value={
+`₹ ${Number(
+data.purchaseAmount
+).toLocaleString("en-IN")}`
+}
 
+icon={<FaTruckLoading/>}
 
-            <div className="
-            grid
-            xl:grid-cols-2
-            gap-6
-            ">
+color="yellow"
 
+/>
 
-                <LowStockTable
 
-                products={
-                    data.lowStockProducts
-                }
 
-                />
 
 
-                <RecentBills
+<StatsCard
 
-                bills={
-                    data.recentBills
-                }
+title="Low Stock"
 
-                />
+value={data.lowStock}
 
+icon={<FaExclamationTriangle/>}
 
-            </div>
+color="red"
 
+/>
 
 
-        </div>
 
-    );
+
+
+<StatsCard
+
+title="Inventory Value"
+
+value={
+`₹ ${Number(
+data.inventoryValue
+).toLocaleString("en-IN")}`
+}
+
+icon={<FaRupeeSign/>}
+
+color="yellow"
+
+/>
+
+
+
+
+
+<StatsCard
+
+title="Today's Sales"
+
+value={
+`₹ ${Number(
+data.todaySales
+).toLocaleString("en-IN")}`
+}
+
+icon={<FaChartLine/>}
+
+color="green"
+
+/>
+
+
+
+
+
+<StatsCard
+
+title="Total Sales"
+
+value={
+`₹ ${Number(
+data.totalSales
+).toLocaleString("en-IN")}`
+}
+
+icon={<FaMoneyBillWave/>}
+
+color="blue"
+
+/>
+
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<div className="
+grid
+xl:grid-cols-2
+gap-6
+">
+
+
+<SalesChart
+
+data={data.salesChart}
+
+/>
+
+
+
+<CategoryPieChart
+
+data={data.categoryChart}
+
+/>
+
+
+</div>
+
+
+
+
+
+
+
+
+<div className="
+grid
+xl:grid-cols-2
+gap-6
+">
+
+
+<LowStockTable
+
+products={data.lowStockProducts}
+
+/>
+
+
+
+<RecentBills
+
+bills={data.recentBills}
+
+/>
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+);
+
 
 }

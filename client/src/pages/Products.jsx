@@ -5,7 +5,8 @@ import {
     getProducts,
     createProduct,
     updateProduct,
-    deleteProduct
+    deleteProduct,
+    importProducts
 } from "../services/productService";
 
 
@@ -13,86 +14,83 @@ import {
 export default function Products(){
 
 
-    const initialForm = {
+const initialForm={
 
-        productName:"",
-        category:"",
-        brand:"",
-        purchasePrice:"",
-        sellingPrice:"",
-        gst:0,
-        currentStock:0,
-        minimumStock:5,
-        unit:"packet"
+    productName:"",
+    category:"",
+    brand:"",
+    purchasePrice:"",
+    sellingPrice:"",
+    gst:0,
+    currentStock:0,
+    minimumStock:5,
+    unit:"packet"
 
-    };
+};
 
 
 
-    const [products,setProducts] = useState([]);
+const [products,setProducts]=useState([]);
 
-    const [form,setForm] = useState(initialForm);
+const [form,setForm]=useState(initialForm);
 
-    const [editId,setEditId] = useState(null);
+const [editId,setEditId]=useState(null);
 
-    const [loading,setLoading] = useState(false);
+const [loading,setLoading]=useState(false);
 
+const [search,setSearch]=useState("");
 
 
 
 
-    useEffect(()=>{
 
-        loadProducts();
+useEffect(()=>{
 
-    },[]);
+    loadProducts();
 
+},[]);
 
 
 
 
 
-    const loadProducts = async()=>{
+const loadProducts=async()=>{
 
+try{
 
-        try{
 
+const data=await getProducts();
 
-            const data = await getProducts();
 
+setProducts(
 
-            setProducts(
-                Array.isArray(data)
-                ? data
-                : []
-            );
+Array.isArray(data)
 
+?
 
-        }
+data
 
-        catch(error){
+:
 
+[]
 
-            console.log(
-                "LOAD PRODUCTS:",
-                error
-            );
+);
 
 
-            toast.error(
+}
 
-                error.response?.data?.message ||
-                "Failed to load products"
+catch(error){
 
-            );
 
+console.log(error);
 
-        }
 
+toast.error("Failed to load products");
 
-    };
 
+}
 
+};
 
 
 
@@ -100,21 +98,20 @@ export default function Products(){
 
 
 
-    const handleChange=(e)=>{
 
+const handleChange=(e)=>{
 
-        setForm({
 
-            ...form,
+setForm({
 
-            [e.target.name]:
-            e.target.value
+...form,
 
-        });
+[e.target.name]:e.target.value
 
+});
 
-    };
 
+};
 
 
 
@@ -123,202 +120,183 @@ export default function Products(){
 
 
 
-    const handleSubmit=async(e)=>{
 
+const handleSubmit=async(e)=>{
 
-        e.preventDefault();
 
+e.preventDefault();
 
-        try{
 
+try{
 
-            setLoading(true);
 
+setLoading(true);
 
 
-            const productData = {
 
+const data={
 
-                productName:
-                form.productName.trim(),
 
+productName:form.productName,
 
-                category:
-                form.category.trim(),
 
+category:form.category,
 
-                brand:
-                form.brand.trim(),
 
+brand:form.brand,
 
-                purchasePrice:
-                Number(form.purchasePrice),
 
+purchasePrice:Number(form.purchasePrice),
 
-                sellingPrice:
-                Number(form.sellingPrice),
 
+sellingPrice:Number(form.sellingPrice),
 
-                gst:
-                Number(form.gst),
 
+gst:Number(form.gst),
 
-                currentStock:
-                Number(form.currentStock),
 
+currentStock:Number(form.currentStock),
 
-                minimumStock:
-                Number(form.minimumStock),
 
+minimumStock:Number(form.minimumStock),
 
-                unit:
-                form.unit
 
+unit:form.unit
 
-            };
 
+};
 
 
 
 
-            if(editId){
 
+if(editId){
 
-                await updateProduct(
 
-                    editId,
+await updateProduct(editId,data);
 
-                    productData
 
-                );
+toast.success("Product updated");
 
 
-                toast.success(
-                    "Product Updated"
-                );
+}
 
+else{
 
-            }
 
-            else{
+await createProduct(data);
 
 
-                await createProduct(
+toast.success("Product added");
 
-                    productData
 
-                );
+}
 
 
-                toast.success(
-                    "Product Added"
-                );
 
 
-            }
 
+setForm(initialForm);
 
+setEditId(null);
 
 
+loadProducts();
 
-            setForm(initialForm);
 
 
-            setEditId(null);
+}
 
+catch(error){
 
-            await loadProducts();
 
+console.log(error);
 
 
-        }
+toast.error(
 
+error.response?.data?.message ||
 
-        catch(error){
+"Operation failed"
 
+);
 
-            console.log(
-                "SUBMIT ERROR:",
-                error
-            );
 
+}
 
+finally{
 
-            toast.error(
+setLoading(false);
 
-                error.response?.data?.message ||
-                "Operation failed"
+}
 
-            );
 
+};
 
-        }
 
 
-        finally{
 
 
-            setLoading(false);
 
 
-        }
 
 
-    };
+const handleEdit=(product)=>{
 
 
+setEditId(product._id);
 
 
+setForm({
 
 
+productName:product.productName || "",
 
 
+category:
 
-    const handleDelete=async(id)=>{
+product.category?._id ||
 
+product.category ||
 
-        try{
+"",
 
 
-            await deleteProduct(id);
+brand:product.brand || "",
 
 
+purchasePrice:product.purchasePrice || 0,
 
-            toast.success(
-                "Product Deleted"
-            );
 
+sellingPrice:product.sellingPrice || 0,
 
 
-            await loadProducts();
+gst:product.gst || 0,
 
 
+currentStock:product.currentStock || 0,
 
-        }
 
-        catch(error){
+minimumStock:product.minimumStock || 5,
 
 
-            console.log(
-                "DELETE ERROR:",
-                error
-            );
+unit:product.unit || "packet"
 
 
-            toast.error(
+});
 
-                error.response?.data?.message ||
-                "Delete failed"
 
-            );
 
+window.scrollTo({
 
-        }
+top:0,
 
+behavior:"smooth"
 
-    };
+});
 
 
+};
 
 
 
@@ -326,64 +304,208 @@ export default function Products(){
 
 
 
-    const handleEdit=(product)=>{
 
 
-        setEditId(product._id);
+const handleDelete=async(id)=>{
 
 
-        setForm({
+try{
 
-            productName:
-            product.productName || "",
 
+await deleteProduct(id);
 
-            category:
-            product.category || "",
 
+toast.success("Product deleted");
 
-            brand:
-            product.brand || "",
 
+loadProducts();
 
-            purchasePrice:
-            product.purchasePrice || 0,
 
+}
 
-            sellingPrice:
-            product.sellingPrice || 0,
+catch(error){
 
 
-            gst:
-            product.gst || 0,
+toast.error(
 
+error.response?.data?.message ||
 
-            currentStock:
-            product.currentStock || 0,
+"Delete failed"
 
+);
 
-            minimumStock:
-            product.minimumStock || 5,
 
+}
 
-            unit:
-            product.unit || "packet"
 
+};
 
-        });
 
 
 
-        window.scrollTo({
 
-            top:0,
 
-            behavior:"smooth"
 
-        });
 
 
-    };
+// ===========================
+// CSV IMPORT
+// ===========================
+
+const handleCSV=(e)=>{
+
+
+const file=e.target.files[0];
+
+
+if(!file)
+
+return;
+
+
+
+const reader=new FileReader();
+
+
+
+reader.onload=async(event)=>{
+
+
+try{
+
+
+const rows = event.target.result
+
+.split("\n")
+
+.slice(1);
+
+
+
+const products = rows
+
+.filter(row=>row.trim())
+
+.map(row=>{
+
+
+const [
+
+productName,
+
+purchasePrice,
+
+sellingPrice,
+
+currentStock,
+
+minimumStock,
+
+category,
+
+brand
+
+]=row.split(",");
+
+
+
+return {
+
+
+productName,
+
+
+purchasePrice:Number(purchasePrice),
+
+
+sellingPrice:Number(sellingPrice),
+
+
+currentStock:Number(currentStock),
+
+
+minimumStock:Number(minimumStock),
+
+
+category,
+
+
+brand
+
+
+};
+
+
+});
+
+
+
+
+
+await importProducts(products);
+
+
+
+toast.success(
+
+"CSV imported successfully"
+
+);
+
+
+
+loadProducts();
+
+
+
+}
+
+catch(error){
+
+
+console.log(error);
+
+
+toast.error(
+
+"CSV import failed"
+
+);
+
+
+}
+
+
+};
+
+
+
+reader.readAsText(file);
+
+
+};
+
+
+
+
+
+
+
+
+
+const filteredProducts = products.filter(product=>
+
+product.productName
+
+.toLowerCase()
+
+.includes(
+
+search.toLowerCase()
+
+)
+
+);
 
 
 
@@ -398,6 +520,7 @@ return (
 <div className="space-y-8">
 
 
+
 <h1 className="text-3xl font-bold text-green-700">
 
 Products Management
@@ -406,6 +529,58 @@ Products Management
 
 
 
+
+
+
+
+
+
+{/* CSV IMPORT */}
+
+
+<div className="bg-white shadow rounded-xl p-6">
+
+
+<h2 className="text-xl font-bold text-green-700 mb-3">
+
+Import Products CSV
+
+</h2>
+
+
+<input
+
+type="file"
+
+accept=".csv"
+
+onChange={handleCSV}
+
+className="border p-3 rounded"
+
+/>
+
+
+<p className="text-sm text-gray-500 mt-2">
+
+CSV format:
+
+productName,purchasePrice,sellingPrice,currentStock,minimumStock,category,brand
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* ADD PRODUCT */}
 
 
 <div className="bg-white shadow rounded-xl p-6">
@@ -420,10 +595,8 @@ className="grid md:grid-cols-3 gap-4"
 >
 
 
-
-
-
 {
+
 [
 
 ["productName","Product Name"],
@@ -442,7 +615,9 @@ className="grid md:grid-cols-3 gap-4"
 
 ["minimumStock","Minimum Stock"]
 
-].map(([name,placeholder])=>(
+]
+
+.map(([name,label])=>(
 
 
 <input
@@ -455,16 +630,24 @@ value={form[name]}
 
 onChange={handleChange}
 
-placeholder={placeholder}
+placeholder={label}
 
 type={
+
 name.includes("Price") ||
-name==="gst" ||
-name.includes("Stock")
+
+name.includes("Stock") ||
+
+name==="gst"
+
 ?
+
 "number"
+
 :
+
 "text"
+
 }
 
 className="border p-3 rounded"
@@ -497,32 +680,34 @@ className="border p-3 rounded"
 
 
 <option value="packet">
+
 Packet
+
 </option>
 
 
 <option value="kg">
+
 Kg
-</option>
 
-
-<option value="litre">
-Litre
 </option>
 
 
 <option value="bag">
+
 Bag
+
 </option>
 
 
-<option value="bottle">
-Bottle
+<option value="litre">
+
+Litre
+
 </option>
 
 
 </select>
-
 
 
 
@@ -566,7 +751,6 @@ editId
 
 
 
-
 </form>
 
 
@@ -578,6 +762,32 @@ editId
 
 
 
+
+
+{/* SEARCH */}
+
+
+<input
+
+placeholder="Search product..."
+
+value={search}
+
+onChange={(e)=>setSearch(e.target.value)}
+
+className="border p-3 rounded w-full"
+
+/>
+
+
+
+
+
+
+
+
+
+{/* PRODUCT TABLE */}
 
 
 <div className="bg-white shadow rounded-xl overflow-x-auto">
@@ -592,27 +802,37 @@ editId
 <tr>
 
 <th className="p-3">
+
 Name
+
 </th>
 
 
-<th className="p-3">
+<th>
+
 Category
+
 </th>
 
 
-<th className="p-3">
+<th>
+
 Stock
+
 </th>
 
 
-<th className="p-3">
+<th>
+
 Price
+
 </th>
 
 
-<th className="p-3">
+<th>
+
 Action
+
 </th>
 
 
@@ -630,7 +850,7 @@ Action
 
 {
 
-products.length===0
+filteredProducts.length===0
 
 ?
 
@@ -651,10 +871,10 @@ No products found
 </tr>
 
 
+
 :
 
-
-products.map(product=>(
+filteredProducts.map(product=>(
 
 
 <tr
@@ -674,44 +894,88 @@ className="border-b"
 
 
 
-<td className="p-3">
 
-{product.category}
+
+<td>
+
+
+{
+
+product.category?.name ||
+
+product.category ||
+
+"-"
+
+}
+
 
 </td>
 
 
 
-<td className="p-3">
+
+
+<td>
+
+
+<span
+
+className={
+
+product.currentStock <= product.minimumStock
+
+?
+
+"text-red-600 font-bold"
+
+:
+
+""
+
+}
+
+>
+
 
 {product.currentStock}
 
+
+</span>
+
+
 </td>
 
 
 
-<td className="p-3">
 
-$ {product.sellingPrice}
+
+<td>
+
+₹ {product.sellingPrice}
 
 </td>
 
 
 
-<td className="p-3 space-x-2">
+
+
+
+<td>
 
 
 <button
 
 onClick={()=>handleEdit(product)}
 
-className="bg-blue-600 text-white px-3 py-1 rounded"
+className="bg-blue-600 text-white px-3 py-1 rounded mr-2"
 
 >
 
 Edit
 
 </button>
+
 
 
 
@@ -729,9 +993,7 @@ Delete
 </button>
 
 
-
 </td>
-
 
 
 </tr>
@@ -741,7 +1003,6 @@ Delete
 
 
 }
-
 
 
 </tbody>
@@ -756,7 +1017,9 @@ Delete
 
 
 
+
 </div>
+
 
 );
 

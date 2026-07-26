@@ -1,19 +1,18 @@
 import React, { useEffect, useState } from "react";
 
 import {
-  Store,
-  Lock,
-  Languages,
-  Database,
-  Package,
-  Users,
-  Receipt,
-  Save
+    Store,
+    Languages,
+    Database,
+    Package,
+    Users,
+    Receipt,
+    Save
 } from "lucide-react";
 
 import { useTranslation } from "react-i18next";
 
-import { getReports } from "../services/reportService";
+import { getDashboard } from "../services/dashboardService";
 
 
 
@@ -26,9 +25,9 @@ const { t, i18n } = useTranslation();
 
 const [stats,setStats]=useState({
 
-products:0,
-customers:0,
-bills:0
+    products:0,
+    customers:0,
+    bills:0
 
 });
 
@@ -36,15 +35,17 @@ bills:0
 
 const [language,setLanguage]=useState(
 
-localStorage.getItem("language") || "en"
+    localStorage.getItem("language") || "en"
 
 );
 
 
 
+
+
 useEffect(()=>{
 
-loadStats();
+    loadStats();
 
 },[]);
 
@@ -54,31 +55,40 @@ loadStats();
 
 const loadStats=async()=>{
 
+
 try{
 
-const data=await getReports();
+
+const data = await getDashboard();
+
 
 
 setStats({
 
-products:data.totalProducts || 0,
+    products:data.totalProducts || 0,
 
-customers:data.totalCustomers || 0,
+    customers:data.totalCustomers || 0,
 
-bills:data.totalBills || 0
+    bills:data.totalBills || 0
 
 });
+
 
 
 }
 
 catch(error){
 
-console.log(error);
+    console.log(
+        "SETTINGS STATS ERROR",
+        error
+    );
 
 }
 
+
 };
+
 
 
 
@@ -97,9 +107,10 @@ i18n.changeLanguage(lang);
 
 
 localStorage.setItem(
-"language",
-lang
+    "language",
+    lang
 );
+
 
 
 };
@@ -108,9 +119,13 @@ lang
 
 
 
+
+
 return (
 
+
 <div className="min-h-screen bg-gray-50 p-6">
+
 
 
 <div className="bg-white rounded-xl shadow p-5 mb-6">
@@ -118,14 +133,19 @@ return (
 
 <h1 className="text-3xl font-bold text-green-700">
 
+
 🌾 {t("shopName")}
+
 
 </h1>
 
 
+
 <p className="text-gray-600">
 
+
 {t("settings")}
+
 
 </p>
 
@@ -136,7 +156,12 @@ return (
 
 
 
+
+
+
+
 <div className="grid md:grid-cols-3 gap-5 mb-6">
+
 
 
 <StatCard
@@ -151,6 +176,8 @@ icon={<Package/>}
 
 
 
+
+
 <StatCard
 
 title={t("customers")}
@@ -160,6 +187,8 @@ value={stats.customers}
 icon={<Users/>}
 
 />
+
+
 
 
 
@@ -182,20 +211,31 @@ icon={<Receipt/>}
 
 
 
+
+
+
 <div className="bg-white rounded-xl shadow p-5 mb-6">
+
 
 
 <div className="flex gap-3 items-center mb-5">
 
+
 <Store className="text-green-700"/>
+
 
 <h2 className="text-xl font-semibold text-green-700">
 
+
 {t("shopInformation")}
+
 
 </h2>
 
+
 </div>
+
+
 
 
 
@@ -206,9 +246,9 @@ label={t("shopName")}
 
 value="🌾 शेतकरी अॅग्रो"
 
-disabled
-
 />
+
+
 
 
 
@@ -218,24 +258,33 @@ label={t("adminName")}
 
 value="रुषिकेश बंड"
 
-disabled
-
 />
 
 
 
 
 
-<button className="mt-5 bg-green-700 text-white px-5 py-2 rounded-lg flex gap-2">
+
+
+<button
+
+className="mt-5 bg-green-700 text-white px-5 py-2 rounded-lg flex gap-2"
+
+>
+
 
 <Save size={18}/>
 
+
 {t("save")}
+
 
 </button>
 
 
+
 </div>
+
 
 
 
@@ -247,20 +296,28 @@ disabled
 <div className="bg-white rounded-xl shadow p-5">
 
 
+
 <div className="flex items-center gap-3 mb-5">
 
 
 <Languages className="text-green-700"/>
 
 
+
 <h2 className="text-xl font-semibold text-green-700">
 
+
 {t("applicationSettings")}
+
 
 </h2>
 
 
+
 </div>
+
+
+
 
 
 
@@ -269,23 +326,31 @@ disabled
 <div className="flex justify-between items-center border rounded-lg p-4">
 
 
+
 <div>
+
 
 <p className="font-medium">
 
+
 {t("language")}
+
 
 </p>
 
 
 <p className="text-gray-500 text-sm">
 
+
 {t("chooseLanguage")}
+
 
 </p>
 
 
 </div>
+
+
 
 
 
@@ -322,11 +387,13 @@ English
 </option>
 
 
-
 </select>
 
 
+
 </div>
+
+
 
 
 
@@ -334,15 +401,21 @@ English
 
 <div className="mt-5 flex gap-3 text-gray-600">
 
+
 <Database/>
+
 
 {t("databaseConnected")}
 
-</div>
-
-
 
 </div>
+
+
+
+
+
+</div>
+
 
 
 
@@ -353,6 +426,7 @@ English
 
 );
 
+
 };
 
 
@@ -361,15 +435,7 @@ English
 
 
 
-const Input=({
-
-label,
-
-value,
-
-disabled
-
-})=>(
+const Input=({label,value})=>(
 
 
 <div className="mb-4">
@@ -377,7 +443,9 @@ disabled
 
 <label className="block text-sm mb-1">
 
+
 {label}
+
 
 </label>
 
@@ -386,7 +454,7 @@ disabled
 
 value={value}
 
-disabled={disabled}
+readOnly
 
 className="w-full border rounded-lg p-2 bg-gray-100"
 
@@ -397,6 +465,7 @@ className="w-full border rounded-lg p-2 bg-gray-100"
 
 
 );
+
 
 
 
@@ -417,36 +486,50 @@ icon
 <div className="bg-white shadow rounded-xl p-5 flex justify-between">
 
 
+
 <div>
+
 
 <p className="text-gray-500">
 
+
 {title}
+
 
 </p>
 
 
 <h2 className="text-2xl font-bold text-green-700">
 
+
 {value}
+
 
 </h2>
 
 
+
 </div>
+
+
 
 
 <div className="text-green-700">
 
+
 {icon}
 
+
 </div>
+
 
 
 </div>
 
 
 );
+
+
 
 
 

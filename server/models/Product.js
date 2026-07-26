@@ -5,134 +5,113 @@ const productSchema = new mongoose.Schema(
 
 {
 
-    productName:{
+productName:{
 
-        type:String,
+type:String,
 
-        required:true,
+required:true,
 
-        trim:true
+trim:true
 
-    },
+},
 
 
-    category:{
+category:{
 
-        type:String,
+type:String,
 
-        required:true,
+required:true
 
-        trim:true
+},
 
-    },
 
+brand:{
 
-    brand:{
+type:String,
 
-        type:String,
+default:""
 
-        default:""
+},
 
-    },
 
 
-    purchasePrice:{
+purchasePrice:{
 
-        type:Number,
+type:Number,
 
-        required:true,
+required:true
 
-        min:0
+},
 
-    },
 
 
-    sellingPrice:{
+sellingPrice:{
 
-        type:Number,
+type:Number,
 
-        required:true,
+required:true
 
-        min:0
+},
 
-    },
 
 
-    gst:{
+gst:{
 
-        type:Number,
+type:Number,
 
-        default:0
+default:0
 
-    },
+},
 
 
-    currentStock:{
 
-        type:Number,
+currentStock:{
 
-        default:0
+type:Number,
 
-    },
+default:0
 
+},
 
-    minimumStock:{
 
-        type:Number,
 
-        default:5
+minimumStock:{
 
-    },
+type:Number,
 
+default:5
 
-    unit:{
+},
 
-        type:String,
 
-        enum:[
 
-            "kg",
+unit:{
 
-            "litre",
+type:String,
 
-            "bag",
+default:"packet"
 
-            "bottle",
+},
 
-            "packet"
 
-        ],
 
-        default:"packet"
+expiryDate:{
 
-    },
+type:Date,
 
+default:null
 
-    expiryDate:{
-
-        type:Date,
-
-        default:null
-
-    },
-
-
-    supplier:{
-
-        type:String,
-
-        default:""
-
-    }
+}
 
 
 },
 
 {
 
-    timestamps:true
+timestamps:true
 
 }
+
 
 );
 
@@ -140,8 +119,8 @@ const productSchema = new mongoose.Schema(
 
 export default mongoose.model(
 
-    "Product",
+"Product",
 
-    productSchema
+productSchema
 
 );
