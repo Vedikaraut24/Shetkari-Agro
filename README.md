@@ -373,7 +373,6 @@ npm run dev
 * Barcode Scanner Integration
 * Supplier Management
 * Purchase Management
-* GST Invoice Support
 * Export Reports to PDF & Excel
 * SMS & WhatsApp Billing
 * Multi-user Role Management
@@ -394,7 +393,7 @@ This project helped me understand:
 * Dashboard Design
 * Inventory Management
 * Billing System Development
-* Business Report Generation
+* GST Invoice Generation
 * Data Visualization
 * Role-based Access Control
 * Full Stack Project Deployment
